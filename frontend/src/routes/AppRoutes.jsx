@@ -14,48 +14,81 @@ import ManageJobs from "../companies/ManageJobs";
 import EmployeeList from "../companies/EmployeeList"; 
 import CompanyProfile from "../companies/CompanyProfile"; 
 import CompanyUpdateJob from "../companies/CompanyUpdateJob"; 
-import AdminLogin from "../admin/AdminLogin";  // ✅ Added Admin Login
+import AdminLogin from "../admin/AdminLogin";
 
 const AppContent = () => {
   const location = useLocation();
-  const [isCompanyLoggedIn, setIsCompanyLoggedIn] = useState(localStorage.getItem("companyAuth") === "true");
+  const [isCompanyLoggedIn, setIsCompanyLoggedIn] = useState(() => {
+    return localStorage.getItem("companyAuth") === "true";
+  });
 
-  // Update state when localStorage changes
   useEffect(() => {
-    setIsCompanyLoggedIn(localStorage.getItem("companyAuth") === "true");
-  }, [location.pathname]);  // ✅ Re-check on route change
+    // ✅ Track changes in localStorage and update state
+    const authStatus = localStorage.getItem("companyAuth") === "true";
+    setIsCompanyLoggedIn(authStatus);
+  }, []);
 
-  const hideNavFooter = ["/login", "/register", "/company-login", "/company-signup", "/admin-login"].includes(location.pathname);
+  const currentPath = location.pathname.trim().toLowerCase();
+
+  // ✅ Hide Navbar & Footer on login/signup pages
+  const hideNavFooter = [
+    "/login", 
+    "/register", 
+    "/company-login", 
+    "/company-signup", 
+    "/admin-login"
+  ].includes(currentPath);
+
+  // ✅ Hide Company Navbar on certain pages
   const excludeCompanyNavbarOnPages = ["/company/profile"];
-  const excludeNavOnPages = ["/company/profile", "/admin-login"]; // ✅ Hide both navbars on this page
 
-  const showCompanyNavbar = isCompanyLoggedIn && location.pathname.startsWith("/company") && !excludeCompanyNavbarOnPages.includes(location.pathname);
-  const showDefaultNavbar = !hideNavFooter && !showCompanyNavbar && !excludeNavOnPages.includes(location.pathname);
+  // ✅ Hide both navbars on specific pages
+  const excludeNavOnPages = [
+    "/company/profile", 
+    "/admin-login", 
+    "/company-login", 
+    "/company-signup"
+  ];
+
+  // ✅ Show Company Navbar if logged in and on relevant pages
+  const showCompanyNavbar =
+    isCompanyLoggedIn &&
+    currentPath.startsWith("/company") &&
+    !excludeCompanyNavbarOnPages.includes(currentPath);
+
+  // ✅ Show Default Navbar only if it's not hidden & not showing Company Navbar
+  const showDefaultNavbar = !hideNavFooter && !showCompanyNavbar && !excludeNavOnPages.includes(currentPath);
 
   return (
     <>
+      {/* ✅ Debugging Output */}
+      {console.log("showDefaultNavbar:", showDefaultNavbar)}
+      {console.log("showCompanyNavbar:", showCompanyNavbar)}
+
+      {/* ✅ Conditionally Render Navbars */}
       {showDefaultNavbar && <Navbar />}
       {showCompanyNavbar && <CompanyNavbar />}
       
       <Routes>
+        {/* General Pages */}
         <Route path="/" element={<Jobs />} />
         <Route path="/companies" element={<Navigate to="/company-login" replace />} />
-        <Route path="/company-login" element={<CompanyLogin />} />
+        <Route path="/company-login" element={<CompanyLogin setIsCompanyLoggedIn={setIsCompanyLoggedIn} />} />
         <Route path="/company-signup" element={<CompanySignup />} />
         <Route path="/services" element={<Services />} />
         <Route path="/register" element={<UserSignup />} />
         <Route path="/login" element={<UserLogin />} />
 
-        {/* Admin Login (No Navbar & Footer) */}
-        <Route path="/admin-login" element={<AdminLogin />} />  {/* ✅ Added Admin Login Route */}
+        {/* ✅ Admin Login (No Navbar & Footer) */}
+        <Route path="/admin-login" element={<AdminLogin />} /> 
 
-        {/* Redirect after Login */}
+        {/* ✅ Redirect after Login */}
         <Route 
           path="/company-dashboard" 
           element={isCompanyLoggedIn ? <Navigate to="/company/add-job" replace /> : <Navigate to="/company-login" replace />} 
         />
 
-        {/* Protect Company Pages */}
+        {/* ✅ Protect Company Pages */}
         <Route path="/company/add-job" element={isCompanyLoggedIn ? <AddJob /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/manage-jobs" element={isCompanyLoggedIn ? <ManageJobs /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/employee-list" element={isCompanyLoggedIn ? <EmployeeList /> : <Navigate to="/company-login" replace />} />
@@ -65,7 +98,8 @@ const AppContent = () => {
         <Route path="/company/update-job/:jobId" element={isCompanyLoggedIn ? <CompanyUpdateJob /> : <Navigate to="/company-login" replace />} />
       </Routes>
 
-      {!hideNavFooter && !excludeNavOnPages.includes(location.pathname) && <Footer />}
+      {/* ✅ Conditionally Render Footer */}
+      {!hideNavFooter && !excludeNavOnPages.includes(currentPath) && <Footer />}
     </>
   );
 };

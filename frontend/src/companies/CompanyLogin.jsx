@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
-const CompanyLogin = () => {
+const CompanyLogin = ({ setIsCompanyLoggedIn }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,19 +11,22 @@ const CompanyLogin = () => {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // Simulate authentication (Replace with actual API call)
     if (email === "company.com" && password === "123456") {
-      localStorage.setItem("companyAuth", "true"); // Store login state
-      navigate("/company/add-job"); // Redirect to Add Job page
+      localStorage.setItem("companyAuth", "true");
+      setIsCompanyLoggedIn(true);  // ✅ Update login state before navigating
+
+      setTimeout(() => {
+        navigate("/company/add-job"); // ✅ Navigate after state updates
+      }, 100);
     } else {
-      alert("Invalid credentials"); // Show error message
+      alert("Invalid credentials");
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-50">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md relative">
-        {/* Close Button (X) */}
+        {/* Close Button */}
         <button onClick={() => navigate("/")} className="absolute top-4 right-4 text-gray-600 hover:text-gray-900">
           <X size={24} />
         </button>

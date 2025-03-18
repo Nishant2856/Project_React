@@ -8,7 +8,10 @@ const CompanyProfile = ({ setIsCompanyLoggedIn }) => {
   const handleLogout = () => {
     localStorage.removeItem("companyAuth");  // ✅ Clear auth
     setIsCompanyLoggedIn(false);  // ✅ Update state
-    navigate("/");  // ✅ Redirect to home
+
+    setTimeout(() => {
+      navigate("/");  // ✅ Navigate after state updates
+    }, 100);
   };
 
   return (
