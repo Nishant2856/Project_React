@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom"; 
 
 const jobs = [
   {
@@ -56,10 +57,12 @@ const ManageJobs = () => {
               </div>
             </div>
 
-            {/* Update Button */}
-            <button className="bg-blue-500 text-white px-2 py-2 rounded-md font-semibold hover:bg-blue-600 w-25 mx-15">
-              UPDATE
-            </button>
+            {/* ✅ Update Button with Link */}
+            <Link to={`/company/update-job/${job.id}`}>
+              <button className="bg-blue-500 text-white px-2 py-2 rounded-md font-semibold hover:bg-blue-600 w-25 mx-15">
+                UPDATE
+              </button>
+            </Link>
 
             {/* Delete Button */}
             <button className="bg-red-500 text-white px-2 py-2 rounded-md font-semibold hover:bg-red-600 w-25 mx-15">

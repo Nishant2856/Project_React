@@ -13,6 +13,8 @@ import AddJob from "../companies/AddJob";
 import ManageJobs from "../companies/ManageJobs"; 
 import EmployeeList from "../companies/EmployeeList"; 
 import CompanyProfile from "../companies/CompanyProfile"; 
+import CompanyUpdateJob from "../companies/CompanyUpdateJob"; 
+import AdminLogin from "../admin/AdminLogin";  // ✅ Added Admin Login
 
 const AppContent = () => {
   const location = useLocation();
@@ -23,9 +25,9 @@ const AppContent = () => {
     setIsCompanyLoggedIn(localStorage.getItem("companyAuth") === "true");
   }, [location.pathname]);  // ✅ Re-check on route change
 
-  const hideNavFooter = ["/login", "/register", "/company-login", "/company-signup"].includes(location.pathname);
+  const hideNavFooter = ["/login", "/register", "/company-login", "/company-signup", "/admin-login"].includes(location.pathname);
   const excludeCompanyNavbarOnPages = ["/company/profile"];
-  const excludeNavOnPages = ["/company/profile"]; // ✅ Hide both navbars on this page
+  const excludeNavOnPages = ["/company/profile", "/admin-login"]; // ✅ Hide both navbars on this page
 
   const showCompanyNavbar = isCompanyLoggedIn && location.pathname.startsWith("/company") && !excludeCompanyNavbarOnPages.includes(location.pathname);
   const showDefaultNavbar = !hideNavFooter && !showCompanyNavbar && !excludeNavOnPages.includes(location.pathname);
@@ -44,6 +46,9 @@ const AppContent = () => {
         <Route path="/register" element={<UserSignup />} />
         <Route path="/login" element={<UserLogin />} />
 
+        {/* Admin Login (No Navbar & Footer) */}
+        <Route path="/admin-login" element={<AdminLogin />} />  {/* ✅ Added Admin Login Route */}
+
         {/* Redirect after Login */}
         <Route 
           path="/company-dashboard" 
@@ -55,13 +60,15 @@ const AppContent = () => {
         <Route path="/company/manage-jobs" element={isCompanyLoggedIn ? <ManageJobs /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/employee-list" element={isCompanyLoggedIn ? <EmployeeList /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/profile" element={isCompanyLoggedIn ? <CompanyProfile setIsCompanyLoggedIn={setIsCompanyLoggedIn} /> : <Navigate to="/company-login" replace />} />
+        
+        {/* ✅ New Route for Updating Jobs */}
+        <Route path="/company/update-job/:jobId" element={isCompanyLoggedIn ? <CompanyUpdateJob /> : <Navigate to="/company-login" replace />} />
       </Routes>
 
       {!hideNavFooter && !excludeNavOnPages.includes(location.pathname) && <Footer />}
     </>
   );
 };
-
 
 const AppRoutes = () => {
   return (
