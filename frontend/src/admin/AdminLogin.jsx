@@ -1,41 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(localStorage.getItem("adminEmail") || "");
+  const [password, setPassword] = useState(localStorage.getItem("adminPassword") || "");
   const [showPassword, setShowPassword] = useState(false);
+
+
+  useEffect(() => {
+    localStorage.setItem("adminEmail", email);
+    localStorage.setItem("adminPassword", password);
+  }, [email, password]);
 
   const handleLogin = (e) => {
     e.preventDefault();
-
-    if (email === "admin.com" && password === "123456") {
-      localStorage.setItem("adminAuth", "true"); 
-      navigate("/admin/dashboard"); 
-    } else {
-      alert("Invalid credentials"); 
-    }
+    navigate("/admin/applicant"); 
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-50">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md relative">
-        {/* Close Button (X) */}
         <button onClick={() => navigate("/")} className="absolute top-4 right-4 text-gray-600 hover:text-gray-900">
           <X size={24} />
         </button>
 
-        {/* Logo */}
         <div className="flex justify-center mb-4">
           <img src="/login.jpeg" alt="Admin Logo" className="h-12" />
         </div>
 
-        {/* Form Title */}
         <h2 className="text-2xl font-semibold text-gray-900 text-center">Admin Login</h2>
 
-        {/* Form */}
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-gray-700 font-medium">Email ID</label>
@@ -45,7 +41,6 @@ const AdminLogin = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter Admin Email"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
             />
           </div>
 
@@ -58,7 +53,6 @@ const AdminLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your Password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                required
               />
               <button
                 type="button"
@@ -70,7 +64,6 @@ const AdminLogin = () => {
             </div>
           </div>
 
-          {/* Login Button */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
@@ -84,4 +77,3 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
- 

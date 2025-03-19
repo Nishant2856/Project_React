@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import AdminNavbar from "../admin/AdminNavbar";  
 import Jobs from "../pages/Jobs";
 import Services from "../pages/Services";
 import UserSignup from "../pages/Usersignup";
@@ -15,6 +16,8 @@ import EmployeeList from "../companies/EmployeeList";
 import CompanyProfile from "../companies/CompanyProfile"; 
 import CompanyUpdateJob from "../companies/CompanyUpdateJob"; 
 import AdminLogin from "../admin/AdminLogin";
+import AdminApplicant from "../admin/AdminApplicant"; // 
+import AdminCompany from "../admin/AdminCompany"; // 
 
 const AppContent = () => {
   const location = useLocation();
@@ -23,7 +26,7 @@ const AppContent = () => {
   });
 
   useEffect(() => {
-    // ✅ Track changes in localStorage and update state
+    // ✅ Track localStorage updates
     const authStatus = localStorage.getItem("companyAuth") === "true";
     setIsCompanyLoggedIn(authStatus);
   }, []);
@@ -39,36 +42,25 @@ const AppContent = () => {
     "/admin-login"
   ].includes(currentPath);
 
-  // ✅ Hide Company Navbar on certain pages
-  const excludeCompanyNavbarOnPages = ["/company/profile"];
-
-  // ✅ Hide both navbars on specific pages
-  const excludeNavOnPages = [
-    "/company/profile", 
-    "/admin-login", 
-    "/company-login", 
-    "/company-signup"
-  ];
+  // ✅ Show Admin Navbar for all `/admin/*` pages except `/admin-login`
+  const showAdminNavbar = currentPath.startsWith("/admin") && currentPath !== "/admin-login";
 
   // ✅ Show Company Navbar if logged in and on relevant pages
   const showCompanyNavbar =
     isCompanyLoggedIn &&
     currentPath.startsWith("/company") &&
-    !excludeCompanyNavbarOnPages.includes(currentPath);
+    !["/company/profile"].includes(currentPath);
 
-  // ✅ Show Default Navbar only if it's not hidden & not showing Company Navbar
-  const showDefaultNavbar = !hideNavFooter && !showCompanyNavbar && !excludeNavOnPages.includes(currentPath);
+  // ✅ Show Default Navbar only if it's not hidden & no other navbar is shown
+  const showDefaultNavbar = !hideNavFooter && !showAdminNavbar && !showCompanyNavbar;
 
   return (
     <>
-      {/* ✅ Debugging Output */}
-      {console.log("showDefaultNavbar:", showDefaultNavbar)}
-      {console.log("showCompanyNavbar:", showCompanyNavbar)}
-
       {/* ✅ Conditionally Render Navbars */}
       {showDefaultNavbar && <Navbar />}
       {showCompanyNavbar && <CompanyNavbar />}
-      
+      {showAdminNavbar && <AdminNavbar />} 
+
       <Routes>
         {/* General Pages */}
         <Route path="/" element={<Jobs />} />
@@ -79,8 +71,10 @@ const AppContent = () => {
         <Route path="/register" element={<UserSignup />} />
         <Route path="/login" element={<UserLogin />} />
 
-        {/* ✅ Admin Login (No Navbar & Footer) */}
+        {/* ✅ Admin Pages */}
         <Route path="/admin-login" element={<AdminLogin />} /> 
+        <Route path="/admin/applicant" element={<AdminApplicant />} /> 
+        <Route path="/admin/companies" element={<AdminCompany />} /> 
 
         {/* ✅ Redirect after Login */}
         <Route 
@@ -99,7 +93,7 @@ const AppContent = () => {
       </Routes>
 
       {/* ✅ Conditionally Render Footer */}
-      {!hideNavFooter && !excludeNavOnPages.includes(currentPath) && <Footer />}
+      {!hideNavFooter && !showAdminNavbar && <Footer />}
     </>
   );
 };
