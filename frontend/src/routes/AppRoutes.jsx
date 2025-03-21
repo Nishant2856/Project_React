@@ -16,8 +16,10 @@ import EmployeeList from "../companies/EmployeeList";
 import CompanyProfile from "../companies/CompanyProfile"; 
 import CompanyUpdateJob from "../companies/CompanyUpdateJob"; 
 import AdminLogin from "../admin/AdminLogin";
-import AdminApplicant from "../admin/AdminApplicant"; // 
-import AdminCompany from "../admin/AdminCompany"; // 
+import AdminApplicant from "../admin/AdminApplicant";  
+import AdminCompany from "../admin/AdminCompany";  
+import AllCompanies from "../pages/AllCompanies"; 
+import AllJobs from "../pages/AllJobs";  // ✅ Imported AllJobs Page
 
 const AppContent = () => {
   const location = useLocation();
@@ -26,7 +28,6 @@ const AppContent = () => {
   });
 
   useEffect(() => {
-    // ✅ Track localStorage updates
     const authStatus = localStorage.getItem("companyAuth") === "true";
     setIsCompanyLoggedIn(authStatus);
   }, []);
@@ -70,6 +71,8 @@ const AppContent = () => {
         <Route path="/services" element={<Services />} />
         <Route path="/register" element={<UserSignup />} />
         <Route path="/login" element={<UserLogin />} />
+        <Route path="/all-companies" element={<AllCompanies />} />  
+        <Route path="/all-jobs" element={<AllJobs />} />  {/* ✅ Added AllJobs Route */}
 
         {/* ✅ Admin Pages */}
         <Route path="/admin-login" element={<AdminLogin />} /> 
