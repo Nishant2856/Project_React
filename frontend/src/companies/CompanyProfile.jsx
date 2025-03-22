@@ -6,11 +6,11 @@ const CompanyProfile = ({ setIsCompanyLoggedIn }) => {
   const navigate = useNavigate(); 
 
   const handleLogout = () => {
-    localStorage.removeItem("companyAuth");  // ✅ Clear auth
-    setIsCompanyLoggedIn(false);  // ✅ Update state
+    localStorage.removeItem("companyAuth");  
+    setIsCompanyLoggedIn(false);  
 
     setTimeout(() => {
-      navigate("/");  // ✅ Navigate after state updates
+      navigate("/");  
     }, 100);
   };
 

@@ -19,7 +19,8 @@ import AdminLogin from "../admin/AdminLogin";
 import AdminApplicant from "../admin/AdminApplicant";  
 import AdminCompany from "../admin/AdminCompany";  
 import AllCompanies from "../pages/AllCompanies"; 
-import AllJobs from "../pages/AllJobs";  // ✅ Imported AllJobs Page
+import AllJobs from "../pages/AllJobs";  
+import AllJobs2 from "../pages/AllJobs2";  
 
 const AppContent = () => {
   const location = useLocation();
@@ -73,6 +74,7 @@ const AppContent = () => {
         <Route path="/login" element={<UserLogin />} />
         <Route path="/all-companies" element={<AllCompanies />} />  
         <Route path="/all-jobs" element={<AllJobs />} />  {/* ✅ Added AllJobs Route */}
+        <Route path="/all-jobs-2" element={<AllJobs2 />} />  {/* ✅ Added AllJobs2 Route */}
 
         {/* ✅ Admin Pages */}
         <Route path="/admin-login" element={<AdminLogin />} /> 

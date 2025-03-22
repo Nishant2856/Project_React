@@ -81,14 +81,14 @@ const AllJobs = () => {
           <p className="text-gray-600 text-sm">Digital first, digital now</p>
         </div>
       </div>
+
       <div className="max-w-6xl mx-auto mt-6 grid grid-cols-3 gap-6">
         <div className="col-span-2">
           <h3 className="text-xl font-bold mb-4">Jobs</h3>
           {jobs.map((job, index) => (
             <div
               key={index}
-              className="bg-white p-4 rounded-lg shadow-md mb-4 cursor-pointer hover:shadow-lg transition"
-              onClick={() => navigate(`/job-details/${index}`)}
+              className="relative bg-white p-4 rounded-lg shadow-md mb-4 hover:shadow-lg transition"
             >
               <h4 className="text-lg font-semibold">{job.title}</h4>
               <p className="text-gray-600">
@@ -112,9 +112,21 @@ const AllJobs = () => {
               {job.isNew && (
                 <span className="text-red-500 text-xs font-semibold">New</span>
               )}
+              
+              {/* View Details Button (Bottom Right) */}
+              <div className="absolute bottom-3 right-3">
+                <button
+                  onClick={() => navigate(`/all-jobs-2`)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs hover:bg-blue-700 transition"
+                >
+                  View Details
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
+        {/* About Company Section */}
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold">About Us</h3>
           <p className="text-sm text-gray-600">
