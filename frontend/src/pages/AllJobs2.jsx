@@ -1,6 +1,8 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const AllJobs2 = () => {
+  const navigate = useNavigate();
+
   const job = {
     title: "Senior AR Caller - Experienced",
     company: "Firstsource",
@@ -15,6 +17,11 @@ const AllJobs2 = () => {
     posted: "Just now",
     logo: "/firstsource.gif",
     banner: "/firstsource_banner2.jpg",
+  };
+
+  // ✅ Handle button click - Redirect to AllJobs page
+  const handleInterestClick = () => {
+    navigate("/login"); 
   };
 
   return (
@@ -59,50 +66,13 @@ const AllJobs2 = () => {
           {/* Footer */}
           <div className="mt-6 flex justify-between items-center">
             <p className="text-sm text-gray-500">Posted: {job.posted}</p>
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700">
+            <button 
+              className="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700"
+              onClick={handleInterestClick} // Redirect to AllJobs
+            >
               I am interested
             </button>
           </div>
-        </div>
-
-        {/* Job Description Card */}
-        <div className="mt-8 bg-white shadow-lg rounded-xl p-10 text-lg text-gray-700">
-          <h2 className="text-2xl font-bold mb-4">Job Description</h2>
-          <p><strong>Greetings from Firstsource solutions LTD !!</strong></p>
-          <p><strong>ABOUT US:</strong> Firstsource Solutions Limited, an RP-Sanjiv Goenka Group company, is a leading provider of transformational solutions across Healthcare, Banking and Financial Services, Communications, Media, and Technology.</p>
-          <p>With an established presence in the US, UK, India, the Philippines, and Mexico, we act as a trusted growth partner for over 150 leading global brands.</p>
-          <p><strong>Website:</strong> <a href="http://www.firstsource.com" className="text-blue-500">http://www.firstsource.com</a></p>
-          
-          <h3 className="text-xl font-semibold mt-4">Position: Senior AR Caller</h3>
-          <ul className="list-disc ml-5">
-            <li>Understand Revenue Cycle Management (RCM) of US Healthcare Providers.</li>
-            <li>Good knowledge of Denials and Immediate action to resolve them.</li>
-            <li>Follow-up with insurance carriers for claim status.</li>
-            <li>Analyze claims in case of rejections.</li>
-            <li>Ensure deliverables adhere to quality standards.</li>
-          </ul>
-
-          <h3 className="text-xl font-semibold mt-4">Eligibility Criteria:</h3>
-          <ul className="list-disc ml-5">
-            <li>Minimum 1.5 years experience in Physician or Hospital Billing.</li>
-            <li>Work from Office mode.</li>
-            <li>Immediate Joiners preferred.</li>
-            <li>Should have proper documents (Education certificates, Pay-slips, etc.).</li>
-          </ul>
-
-          <h3 className="text-xl font-semibold mt-4">Key Skills:</h3>
-          <ul className="list-disc ml-5">
-            <li>Good Knowledge in AR Calling.</li>
-            <li>Excellent Communication Skill.</li>
-            <li>Listening & Comprehension.</li>
-          </ul>
-
-          <h3 className="text-xl font-semibold mt-4">Shift:</h3>
-          <p>Night shift</p>
-          <p><strong>Cab Boundary Limit:</strong> We provide cab up to 30 km (One way drop cab | Doorstep only).</p>
-          <p><strong>Venue:</strong> {job.venue}</p>
-          <p><strong>Walk-In Details:</strong> Monday to Friday, 1:00 PM - 4:00 PM</p>
-          <p><strong>Contact:</strong> {job.contact} | <a href="mailto:abhilash.cbb@firstsource.com" className="text-blue-500">abhilash.cbb@firstsource.com</a></p>
         </div>
       </div>
     </div>
