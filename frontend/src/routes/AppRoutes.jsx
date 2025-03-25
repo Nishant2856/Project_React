@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AdminNavbar from "../admin/AdminNavbar";  
+import ApplicantNavbar from "../Applicant/ApplicantNavbar";
 import Jobs from "../pages/Jobs";
 import Services from "../pages/Services";
 import UserSignup from "../pages/Usersignup";
@@ -21,21 +22,30 @@ import AdminCompany from "../admin/AdminCompany";
 import AllCompanies from "../pages/AllCompanies"; 
 import AllJobs from "../pages/AllJobs";  
 import AllJobs2 from "../pages/AllJobs2";  
+import AJob from "../Applicant/AJob";  
+import AAllCompanies from "../Applicant/AAllCompanies";
+import AAllJobs from "../Applicant/AAlljobs";
+import AAllJobs2 from "../Applicant/AAllJobs2";
 
 const AppContent = () => {
   const location = useLocation();
   const [isCompanyLoggedIn, setIsCompanyLoggedIn] = useState(() => {
     return localStorage.getItem("companyAuth") === "true";
   });
+  const [isApplicantLoggedIn, setIsApplicantLoggedIn] = useState(() => {
+    return localStorage.getItem("applicantAuth") === "true";
+  });
 
   useEffect(() => {
-    const authStatus = localStorage.getItem("companyAuth") === "true";
-    setIsCompanyLoggedIn(authStatus);
-  }, []);
+    const companyAuthStatus = localStorage.getItem("companyAuth") === "true";
+    const applicantAuthStatus = localStorage.getItem("applicantAuth") === "true";
+    setIsCompanyLoggedIn(companyAuthStatus);
+    setIsApplicantLoggedIn(applicantAuthStatus);
+  }, [location]);
 
   const currentPath = location.pathname.trim().toLowerCase();
 
-  // ✅ Hide Navbar & Footer on login/signup pages
+  // Hide Navbar & Footer on login/signup pages
   const hideNavFooter = [
     "/login", 
     "/register", 
@@ -44,24 +54,33 @@ const AppContent = () => {
     "/admin-login"
   ].includes(currentPath);
 
-  // ✅ Show Admin Navbar for all `/admin/*` pages except `/admin-login`
+  // Show Admin Navbar for all `/admin/*` pages except `/admin-login`
   const showAdminNavbar = currentPath.startsWith("/admin") && currentPath !== "/admin-login";
 
-  // ✅ Show Company Navbar if logged in and on relevant pages
+  // Show Company Navbar if logged in and on relevant pages
   const showCompanyNavbar =
     isCompanyLoggedIn &&
     currentPath.startsWith("/company") &&
     !["/company/profile"].includes(currentPath);
 
-  // ✅ Show Default Navbar only if it's not hidden & no other navbar is shown
-  const showDefaultNavbar = !hideNavFooter && !showAdminNavbar && !showCompanyNavbar;
+  // Show Applicant Navbar for specific applicant-related pages
+  const showApplicantNavbar = isApplicantLoggedIn && [
+    "/ajob", 
+    "/aall-companies", 
+    "/aall-jobs", 
+    "/aall-jobs-2"
+  ].includes(currentPath);
+
+  // Show Default Navbar only if it's not hidden & no other navbar is shown
+  const showDefaultNavbar = !hideNavFooter && !showAdminNavbar && !showCompanyNavbar && !showApplicantNavbar;
 
   return (
     <>
-      {/* ✅ Conditionally Render Navbars */}
+      {/* Conditionally Render Navbars */}
       {showDefaultNavbar && <Navbar />}
       {showCompanyNavbar && <CompanyNavbar />}
       {showAdminNavbar && <AdminNavbar />} 
+      {showApplicantNavbar && <ApplicantNavbar />} 
 
       <Routes>
         {/* General Pages */}
@@ -73,31 +92,47 @@ const AppContent = () => {
         <Route path="/register" element={<UserSignup />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/all-companies" element={<AllCompanies />} />  
-        <Route path="/all-jobs" element={<AllJobs />} />  {/* ✅ Added AllJobs Route */}
-        <Route path="/all-jobs-2" element={<AllJobs2 />} />  {/* ✅ Added AllJobs2 Route */}
+        <Route path="/all-jobs" element={<AllJobs />} />
+        <Route path="/all-jobs-2" element={<AllJobs2 />} />
+        
+        {/* Protected Applicant Routes */}
+        <Route 
+          path="/ajob" 
+          element={isApplicantLoggedIn ? <AJob /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/aall-companies" 
+          element={isApplicantLoggedIn ? <AAllCompanies /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/aall-jobs" 
+          element={isApplicantLoggedIn ? <AAllJobs /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/aall-jobs-2" 
+          element={isApplicantLoggedIn ? <AAllJobs2 /> : <Navigate to="/login" replace />} 
+        />
 
-        {/* ✅ Admin Pages */}
+        {/* Admin Pages */}
         <Route path="/admin-login" element={<AdminLogin />} /> 
         <Route path="/admin/applicant" element={<AdminApplicant />} /> 
         <Route path="/admin/companies" element={<AdminCompany />} /> 
 
-        {/* ✅ Redirect after Login */}
+        {/* Redirect after Company Login */}
         <Route 
           path="/company-dashboard" 
           element={isCompanyLoggedIn ? <Navigate to="/company/add-job" replace /> : <Navigate to="/company-login" replace />} 
         />
 
-        {/* ✅ Protect Company Pages */}
+        {/* Protect Company Pages */}
         <Route path="/company/add-job" element={isCompanyLoggedIn ? <AddJob /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/manage-jobs" element={isCompanyLoggedIn ? <ManageJobs /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/employee-list" element={isCompanyLoggedIn ? <EmployeeList /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/profile" element={isCompanyLoggedIn ? <CompanyProfile setIsCompanyLoggedIn={setIsCompanyLoggedIn} /> : <Navigate to="/company-login" replace />} />
-        
-        {/* ✅ New Route for Updating Jobs */}
         <Route path="/company/update-job/:jobId" element={isCompanyLoggedIn ? <CompanyUpdateJob /> : <Navigate to="/company-login" replace />} />
       </Routes>
 
-      {/* ✅ Conditionally Render Footer */}
+      {/* Conditionally Render Footer */}
       {!hideNavFooter && !showAdminNavbar && <Footer />}
     </>
   );

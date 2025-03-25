@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const Jobs = () => {
+const AJob = () => {
   const navigate = useNavigate();
 
   return (
@@ -69,7 +69,10 @@ const Jobs = () => {
               <h4 className="text-lg font-semibold">{company.name}</h4>
               <p className="text-sm text-gray-500">⭐ {company.rating} | {company.reviews} reviews</p>
               <p className="text-sm text-gray-600 mt-2">{company.description}</p>
-              <button className="mt-4 bg-blue-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-blue-600">
+              <button 
+                className="mt-4 bg-blue-500 text-white px-5 py-2 rounded-lg shadow-md hover:bg-blue-600"
+                onClick={() => navigate("/aall-jobs")}  // ✅ Navigates to AllJobs page
+              >
                 View Jobs
               </button>
             </div>
@@ -80,7 +83,7 @@ const Jobs = () => {
         <div className="text-center mt-8">
           <button
             className="bg-blue-500 text-white px-8 py-3 rounded-lg shadow-lg hover:bg-blue-600"
-            onClick={() => navigate("/all-companies")}
+            onClick={() => navigate("/aall-companies")}
           >
             View all companies
           </button>
@@ -100,25 +103,6 @@ const Jobs = () => {
         </div>
       </div>
 
-      {/* Job Role List */}
-      <div className="relative -mt-10 bg-white p-8 rounded-xl shadow-xl max-w-5xl w-full mx-auto z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            { role: "Full Stack Developer", jobs: "20.2K+ jobs" },
-            { role: "Front End Developer", jobs: "5.2K+ jobs" },
-            { role: "Mobile / App Developer", jobs: "3.1K+ jobs" },
-            { role: "DevOps Engineer", jobs: "3K+ jobs" },
-            { role: "Engineering Manager", jobs: "1.5K+ jobs" },
-            { role: "Technical Lead", jobs: "10.1K+ jobs" },
-          ].map((job) => (
-            <div key={job.role} className="border border-gray-300 p-6 rounded-lg text-center shadow-lg bg-gray-50 hover:bg-gray-100 transition duration-300 transform hover:scale-105">
-              <h4 className="text-lg font-semibold text-gray-800">{job.role}</h4>
-              <p className="text-md text-gray-600 mt-1">{job.jobs} ›</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Call to Action Section */}
       <div className="mt-12 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-8 rounded-xl shadow-xl text-center w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between">
         <img src="/home2.jpeg" alt="Future Jobs" className="w-56 h-40 rounded-lg object-cover shadow-lg" />
@@ -133,4 +117,4 @@ const Jobs = () => {
   );
 };
 
-export default Jobs;
+export default AJob;
