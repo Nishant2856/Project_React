@@ -13,10 +13,10 @@ const CompanyLogin = ({ setIsCompanyLoggedIn }) => {
 
     if (email === "company.com" && password === "123456") {
       localStorage.setItem("companyAuth", "true");
-      setIsCompanyLoggedIn(true);  // ✅ Update login state before navigating
+      setIsCompanyLoggedIn(true);  
 
       setTimeout(() => {
-        navigate("/company/add-job"); // ✅ Navigate after state updates
+        navigate("/company/add-job"); 
       }, 100);
     } else {
       alert("Invalid credentials");

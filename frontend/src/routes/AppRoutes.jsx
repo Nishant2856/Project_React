@@ -43,44 +43,50 @@ const AppContent = () => {
     setIsApplicantLoggedIn(applicantAuthStatus);
   }, [location]);
 
-  const currentPath = location.pathname.trim().toLowerCase();
+  const currentPath = location.pathname;
 
-  // Hide Navbar & Footer on login/signup pages
-  const hideNavFooter = [
-    "/login", 
-    "/register", 
-    "/company-login", 
-    "/company-signup", 
-    "/admin-login"
-  ].includes(currentPath);
+  // List of paths where NO navbar should show
+  const noNavbarPaths = [
+    '/login',
+    '/register',
+    '/company-login',
+    '/company-signup',
+    '/admin-login',
+    '/company/profile' // Explicitly exclude company profile
+  ];
 
-  // Show Admin Navbar for all `/admin/*` pages except `/admin-login`
-  const showAdminNavbar = currentPath.startsWith("/admin") && currentPath !== "/admin-login";
+  // List of paths where NO footer should show
+  const noFooterPaths = [
+    ...noNavbarPaths,
+    '/admin'
+  ];
 
-  // Show Company Navbar if logged in and on relevant pages
-  const showCompanyNavbar =
-    isCompanyLoggedIn &&
-    currentPath.startsWith("/company") &&
-    !["/company/profile"].includes(currentPath);
+  // Show Admin Navbar only for admin routes (except login)
+  const showAdminNavbar = currentPath.startsWith('/admin') && !noNavbarPaths.includes(currentPath);
 
-  // Show Applicant Navbar for specific applicant-related pages
-  const showApplicantNavbar = isApplicantLoggedIn && [
-    "/ajob", 
-    "/aall-companies", 
-    "/aall-jobs", 
-    "/aall-jobs-2"
-  ].includes(currentPath);
+  // Show Company Navbar for company routes (except excluded paths)
+  const showCompanyNavbar = 
+    isCompanyLoggedIn && 
+    currentPath.startsWith('/company') && 
+    !noNavbarPaths.includes(currentPath);
 
-  // Show Default Navbar only if it's not hidden & no other navbar is shown
-  const showDefaultNavbar = !hideNavFooter && !showAdminNavbar && !showCompanyNavbar && !showApplicantNavbar;
+  // Show Applicant Navbar for applicant routes
+  const showApplicantNavbar = isApplicantLoggedIn && currentPath.startsWith('/a');
+
+  // Show Default Navbar only when none of the above apply
+  const showDefaultNavbar = 
+    !noNavbarPaths.includes(currentPath) &&
+    !currentPath.startsWith('/admin') &&
+    !currentPath.startsWith('/company') &&
+    !currentPath.startsWith('/a');
 
   return (
     <>
       {/* Conditionally Render Navbars */}
       {showDefaultNavbar && <Navbar />}
       {showCompanyNavbar && <CompanyNavbar />}
-      {showAdminNavbar && <AdminNavbar />} 
-      {showApplicantNavbar && <ApplicantNavbar />} 
+      {showAdminNavbar && <AdminNavbar />}
+      {showApplicantNavbar && <ApplicantNavbar />}
 
       <Routes>
         {/* General Pages */}
@@ -118,22 +124,19 @@ const AppContent = () => {
         <Route path="/admin/applicant" element={<AdminApplicant />} /> 
         <Route path="/admin/companies" element={<AdminCompany />} /> 
 
-        {/* Redirect after Company Login */}
-        <Route 
-          path="/company-dashboard" 
-          element={isCompanyLoggedIn ? <Navigate to="/company/add-job" replace /> : <Navigate to="/company-login" replace />} 
-        />
-
         {/* Protect Company Pages */}
         <Route path="/company/add-job" element={isCompanyLoggedIn ? <AddJob /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/manage-jobs" element={isCompanyLoggedIn ? <ManageJobs /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/employee-list" element={isCompanyLoggedIn ? <EmployeeList /> : <Navigate to="/company-login" replace />} />
-        <Route path="/company/profile" element={isCompanyLoggedIn ? <CompanyProfile setIsCompanyLoggedIn={setIsCompanyLoggedIn} /> : <Navigate to="/company-login" replace />} />
+        <Route 
+          path="/company/profile" 
+          element={isCompanyLoggedIn ? <CompanyProfile setIsCompanyLoggedIn={setIsCompanyLoggedIn} /> : <Navigate to="/company-login" replace />} 
+        />
         <Route path="/company/update-job/:jobId" element={isCompanyLoggedIn ? <CompanyUpdateJob /> : <Navigate to="/company-login" replace />} />
       </Routes>
 
       {/* Conditionally Render Footer */}
-      {!hideNavFooter && !showAdminNavbar && <Footer />}
+      {!noFooterPaths.includes(currentPath) && !currentPath.startsWith('/admin') && <Footer />}
     </>
   );
 };
