@@ -6,11 +6,6 @@ const ApplicantNavbar = () => {
   const navigate = useNavigate();
   const userName = "Nishant"; // You can make this dynamic later
 
-  const handleLogout = () => {
-    localStorage.removeItem("applicantAuth");
-    navigate("/");
-  };
-
   return (
     <nav className="bg-white shadow-md py-4 px-6 md:px-10 flex items-center justify-between">
       {/* Logo */}
@@ -31,14 +26,24 @@ const ApplicantNavbar = () => {
       {/* User Profile Section */}
       <div className="flex items-center space-x-4">
         <span className="text-gray-700 text-lg hidden md:block">Welcome, {userName}</span>
-        <div className="relative w-8 h-8 flex items-center justify-center rounded-full border-2 border-blue-500">
-          <FiUser className="text-gray-600 text-xl" />
-        </div>
+        
+        {/* Profile Image/Icon that navigates to ApplicantProfile */}
         <button 
-          onClick={handleLogout}
-          className="text-red-500 hover:text-red-700 text-sm font-medium"
+          onClick={() => navigate("/applicant-profile")}
+          className="flex items-center justify-center"
         >
-          Logout
+          {/* You can use either an image or an icon */}
+          {/* Option 1: Using an image from your files */}
+          <img 
+            src="/profile.jpg" // Replace with your actual profile image path
+            alt="Profile" 
+            className="h-10 w-10 rounded-full border-2 border-gray-200 object-cover"
+          />
+          
+          {/* Option 2: Using an icon (if you don't have an image) */}
+          {/* <div className="h-10 w-10 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
+            <FiUser className="text-gray-600 text-xl" />
+          </div> */}
         </button>
       </div>
     </nav>

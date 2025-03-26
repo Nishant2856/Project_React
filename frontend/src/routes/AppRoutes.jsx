@@ -26,6 +26,7 @@ import AJob from "../Applicant/AJob";
 import AAllCompanies from "../Applicant/AAllCompanies";
 import AAllJobs from "../Applicant/AAlljobs";
 import AAllJobs2 from "../Applicant/AAllJobs2";
+import ApplicantProfile from "../Applicant/ApplicantProfile";
 
 const AppContent = () => {
   const location = useLocation();
@@ -52,7 +53,8 @@ const AppContent = () => {
     '/company-login',
     '/company-signup',
     '/admin-login',
-    '/company/profile' // Explicitly exclude company profile
+    '/company/profile',
+    '/applicant-profile' // Add this to exclude navbar from profile page
   ];
 
   // List of paths where NO footer should show
@@ -70,15 +72,18 @@ const AppContent = () => {
     currentPath.startsWith('/company') && 
     !noNavbarPaths.includes(currentPath);
 
-  // Show Applicant Navbar for applicant routes
-  const showApplicantNavbar = isApplicantLoggedIn && currentPath.startsWith('/a');
+  // Show Applicant Navbar for applicant routes (except profile page)
+  const showApplicantNavbar = isApplicantLoggedIn && 
+  currentPath.startsWith('/a') && 
+  !noNavbarPaths.includes(currentPath);
 
   // Show Default Navbar only when none of the above apply
   const showDefaultNavbar = 
     !noNavbarPaths.includes(currentPath) &&
     !currentPath.startsWith('/admin') &&
     !currentPath.startsWith('/company') &&
-    !currentPath.startsWith('/a');
+    !currentPath.startsWith('/a') &&
+    !currentPath.startsWith('/applicant-profile');
 
   return (
     <>
@@ -96,7 +101,7 @@ const AppContent = () => {
         <Route path="/company-signup" element={<CompanySignup />} />
         <Route path="/services" element={<Services />} />
         <Route path="/register" element={<UserSignup />} />
-        <Route path="/login" element={<UserLogin />} />
+        <Route path="/login" element={<UserLogin setIsApplicantLoggedIn={setIsApplicantLoggedIn} />} />
         <Route path="/all-companies" element={<AllCompanies />} />  
         <Route path="/all-jobs" element={<AllJobs />} />
         <Route path="/all-jobs-2" element={<AllJobs2 />} />
@@ -117,6 +122,10 @@ const AppContent = () => {
         <Route 
           path="/aall-jobs-2" 
           element={isApplicantLoggedIn ? <AAllJobs2 /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/applicant-profile" 
+          element={isApplicantLoggedIn ? <ApplicantProfile setIsApplicantLoggedIn={setIsApplicantLoggedIn} /> : <Navigate to="/login" replace />} 
         />
 
         {/* Admin Pages */}
