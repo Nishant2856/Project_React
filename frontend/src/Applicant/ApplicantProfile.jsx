@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPhone, FaEnvelope, FaInfoCircle, FaSignOutAlt, FaPen, FaTimes, FaCheck } from "react-icons/fa";
 
-const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {  // Changed from setIsCompanyLoggedIn to setIsApplicantLoggedIn
+const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {  
   const navigate = useNavigate();
   const [activePopup, setActivePopup] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
@@ -34,9 +34,9 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {  // Changed from setI
   const [profileSummary, setProfileSummary] = useState("");
 
   const handleLogout = () => {
-    localStorage.removeItem("applicantAuth");  // Changed from companyAuth to applicantAuth
+    localStorage.removeItem("applicantAuth");  
     setIsApplicantLoggedIn(false);
-    navigate("/");  // Directly navigate to home page
+    navigate("/");  
   };
 
   const handleResumeUpload = (e) => {

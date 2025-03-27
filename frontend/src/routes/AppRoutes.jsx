@@ -46,7 +46,7 @@ const AppContent = () => {
 
   const currentPath = location.pathname;
 
-  // List of paths where NO navbar should show
+  // List of paths where NO navbar should show (excluding the specific pages we want it on)
   const noNavbarPaths = [
     '/login',
     '/register',
@@ -54,7 +54,14 @@ const AppContent = () => {
     '/company-signup',
     '/admin-login',
     '/company/profile',
-    '/applicant-profile' // Add this to exclude navbar from profile page
+    '/applicant-profile'
+  ];
+
+  // List of paths where we specifically WANT the default Navbar
+  const defaultNavbarPaths = [
+    '/all-companies',
+    '/all-jobs',
+    '/all-jobs-2'
   ];
 
   // List of paths where NO footer should show
@@ -74,16 +81,18 @@ const AppContent = () => {
 
   // Show Applicant Navbar for applicant routes (except profile page)
   const showApplicantNavbar = isApplicantLoggedIn && 
-  currentPath.startsWith('/a') && 
-  !noNavbarPaths.includes(currentPath);
+    currentPath.startsWith('/a') && 
+    !noNavbarPaths.includes(currentPath);
 
-  // Show Default Navbar only when none of the above apply
+  // Show Default Navbar only on specific paths or when none of the above apply
   const showDefaultNavbar = 
-    !noNavbarPaths.includes(currentPath) &&
-    !currentPath.startsWith('/admin') &&
-    !currentPath.startsWith('/company') &&
-    !currentPath.startsWith('/a') &&
-    !currentPath.startsWith('/applicant-profile');
+    defaultNavbarPaths.includes(currentPath) || (
+      !noNavbarPaths.includes(currentPath) &&
+      !currentPath.startsWith('/admin') &&
+      !currentPath.startsWith('/company') &&
+      !currentPath.startsWith('/a') &&
+      !currentPath.startsWith('/applicant-profile')
+    );
 
   return (
     <>

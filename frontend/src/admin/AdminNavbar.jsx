@@ -36,7 +36,7 @@ const AdminNavbar = () => {
             } hover:text-blue-500`
           }
         >
-          User Detail
+          Applicant Detail
         </NavLink>
 
         <NavLink
