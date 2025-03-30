@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
 const UserLogin = () => {
   const navigate = useNavigate();
+
+  // Check if user is already authenticated on component mount
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("applicantAuth") === "true";
+    if (isAuthenticated) {
+      navigate("/ajob");
+    }
+  }, [navigate]);
 
   const handleLogin = (e) => {
     e.preventDefault();

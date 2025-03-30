@@ -19,6 +19,7 @@ import CompanyUpdateJob from "../companies/CompanyUpdateJob";
 import AdminLogin from "../admin/AdminLogin";
 import AdminApplicant from "../admin/AdminApplicant";  
 import AdminCompany from "../admin/AdminCompany";  
+import AdminReport from "../admin/AdminReport";  
 import AllCompanies from "../pages/AllCompanies"; 
 import AllJobs from "../pages/AllJobs";  
 import AllJobs2 from "../pages/AllJobs2";  
@@ -27,6 +28,7 @@ import AAllCompanies from "../Applicant/AAllCompanies";
 import AAllJobs from "../Applicant/AAlljobs";
 import AAllJobs2 from "../Applicant/AAllJobs2";
 import ApplicantProfile from "../Applicant/ApplicantProfile";
+import ApplicantStattus from "../Applicant/ApplicantStatus";
 
 const AppContent = () => {
   const location = useLocation();
@@ -46,7 +48,7 @@ const AppContent = () => {
 
   const currentPath = location.pathname;
 
-  // List of paths where NO navbar should show (excluding the specific pages we want it on)
+  // List of paths where NO navbar should show
   const noNavbarPaths = [
     '/login',
     '/register',
@@ -70,28 +72,29 @@ const AppContent = () => {
     '/admin'
   ];
 
-  // Show Admin Navbar only for admin routes (except login)
+  // Show Admin Navbar only for admin routes
   const showAdminNavbar = currentPath.startsWith('/admin') && !noNavbarPaths.includes(currentPath);
 
-  // Show Company Navbar for company routes (except excluded paths)
+  // Show Company Navbar
   const showCompanyNavbar = 
     isCompanyLoggedIn && 
     currentPath.startsWith('/company') && 
     !noNavbarPaths.includes(currentPath);
 
-  // Show Applicant Navbar for applicant routes (except profile page)
+  // Show Applicant Navbar
   const showApplicantNavbar = isApplicantLoggedIn && 
-    currentPath.startsWith('/a') && 
+    (currentPath.startsWith('/a') || currentPath.startsWith('/applicant-status')) && 
     !noNavbarPaths.includes(currentPath);
 
-  // Show Default Navbar only on specific paths or when none of the above apply
+  // Show Default Navbar
   const showDefaultNavbar = 
     defaultNavbarPaths.includes(currentPath) || (
       !noNavbarPaths.includes(currentPath) &&
       !currentPath.startsWith('/admin') &&
       !currentPath.startsWith('/company') &&
       !currentPath.startsWith('/a') &&
-      !currentPath.startsWith('/applicant-profile')
+      !currentPath.startsWith('/applicant-profile') &&
+      !currentPath.startsWith('/applicant-status')
     );
 
   return (
@@ -136,13 +139,18 @@ const AppContent = () => {
           path="/applicant-profile" 
           element={isApplicantLoggedIn ? <ApplicantProfile setIsApplicantLoggedIn={setIsApplicantLoggedIn} /> : <Navigate to="/login" replace />} 
         />
+        <Route 
+          path="/applicant-status" 
+          element={isApplicantLoggedIn ? <ApplicantStattus /> : <Navigate to="/login" replace />} 
+        />
 
         {/* Admin Pages */}
         <Route path="/admin-login" element={<AdminLogin />} /> 
         <Route path="/admin/applicant" element={<AdminApplicant />} /> 
         <Route path="/admin/companies" element={<AdminCompany />} /> 
+        <Route path="/admin/report" element={<AdminReport />} /> 
 
-        {/* Protect Company Pages */}
+        {/* Protected Company Pages */}
         <Route path="/company/add-job" element={isCompanyLoggedIn ? <AddJob /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/manage-jobs" element={isCompanyLoggedIn ? <ManageJobs /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/employee-list" element={isCompanyLoggedIn ? <EmployeeList /> : <Navigate to="/company-login" replace />} />

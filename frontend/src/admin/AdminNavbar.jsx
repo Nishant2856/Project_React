@@ -40,7 +40,7 @@ const AdminNavbar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/reports"
+          to="/admin/report"
           className={({ isActive }) =>
             `font-semibold ${
               isActive ? "text-blue-600" : "text-black"

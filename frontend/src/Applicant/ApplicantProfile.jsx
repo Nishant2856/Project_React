@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaPhone, FaEnvelope, FaInfoCircle, FaSignOutAlt, FaPen, FaTimes, FaCheck } from "react-icons/fa";
 
 const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {  
@@ -71,7 +71,6 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
     setActivePopup(null);
   };
 
-  // Fixed the input issue by properly handling onChange events
   const handleInputChange = (e, setter, field, isNested = false) => {
     const value = e.target.value;
     if (isNested) {
@@ -162,6 +161,22 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
           className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
           onClick={() => setActivePopup('profile')}
         />
+      </div>
+
+      {/* Registered Company Card */}
+      <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Registered Company</h2>
+          <Link to="/applicant-status">
+            <FaPen 
+              className="text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
+            />
+          </Link>
+        </div>
+        <p className="text-gray-600 mb-4">View and manage your registered companies and application statuses</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        </div>
       </div>
 
       {/* Resume Section */}
