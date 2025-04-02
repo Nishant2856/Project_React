@@ -55,7 +55,10 @@ const CompanyProfile = ({ setIsCompanyLoggedIn }) => {
             </div>
           </div>
         </div>
-        <FaPen className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" />
+        <FaPen 
+        className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
+        onClick={() => navigate("/company-profile-update")}
+        />
       </div>
     </div>
   );

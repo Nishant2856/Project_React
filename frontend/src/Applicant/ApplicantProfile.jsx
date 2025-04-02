@@ -82,7 +82,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
 
   const Popup = ({ title, children, onSave }) => {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-blue-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold">{title}</h3>
@@ -132,36 +132,37 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white p-8 rounded-2xl shadow-lg mt-12 flex items-center w-3/4 relative">
-        <div className="mr-8">
-          <img src="/firstsource.gif" alt="Profile" className="h-44 w-44 rounded-full border-4 border-gray-300 shadow-lg" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold mb-2">Nishant</h2>
-          <hr className="my-2 border-gray-300" />
-          <div className="flex items-center space-x-8">
-            <div className="text-lg">
-              <p className="flex items-center text-gray-600 mb-2">
-                <FaPhone className="mr-3 text-blue-500" /> 4512762145
-              </p>
-              <p className="flex items-center text-gray-600">
-                <FaEnvelope className="mr-3 text-blue-500" />
-                nishant@gmail.com
-              </p>
-            </div>
-            <div className="border-l-2 border-gray-300 pl-6 text-lg">
-              <p className="flex items-center text-gray-600">
-                <FaInfoCircle className="mr-2 text-blue-500" />
-                Welcome to my profile page
-              </p>
-            </div>
-          </div>
-        </div>
-        <FaPen 
-          className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
-          onClick={() => setActivePopup('profile')}
-        />
+<div className="bg-white p-8 rounded-2xl shadow-lg mt-12 flex items-center w-3/4 relative">
+  <div className="mr-8">
+    <img src="/profile.jpg" alt="Profile" className="h-44 w-44 rounded-full border-4 border-gray-300 shadow-lg" />
+  </div>
+  <div className="flex-1">
+    <h2 className="text-2xl font-bold mb-2">Nishant</h2>
+    <hr className="my-2 border-gray-300" />
+    <div className="flex items-center space-x-8">
+      <div className="text-lg">
+        <p className="flex items-center text-gray-600 mb-2">
+          <FaPhone className="mr-3 text-blue-500" /> 4512762145
+        </p>
+        <p className="flex items-center text-gray-600">
+          <FaEnvelope className="mr-3 text-blue-500" />
+          nishant@gmail.com
+        </p>
       </div>
+      <div className="border-l-2 border-gray-300 pl-6 text-lg">
+        <p className="flex items-center text-gray-600">
+          <FaInfoCircle className="mr-2 text-blue-500" />
+          Welcome to my profile page
+        </p>
+      </div>
+    </div>
+  </div>
+  <FaPen 
+    className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
+    onClick={() => navigate("/applicant-profile-update")}
+  />
+</div>
+
 
       {/* Registered Company Card */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
