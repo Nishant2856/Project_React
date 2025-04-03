@@ -195,7 +195,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
 
       {/* Key Skills Section */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
-        <h2 className="text-xl font-bold mb-4">Key skills ✅</h2>
+        <h2 className="text-xl font-bold mb-4">Key skills </h2>
         <p className="text-gray-600 mb-4">Your skills details will help recruiters understand your experience</p>
         {skills.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
@@ -214,7 +214,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
 
       {/* Education Section */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
-        <h2 className="text-xl font-bold mb-4">Education ✅</h2>
+        <h2 className="text-xl font-bold mb-4">Education </h2>
         <p className="text-gray-600 mb-4">Your qualifications help employers know your educational background</p>
         {education.degree && (
           <div className="space-y-2">
@@ -234,7 +234,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
 
       {/* IT Skills Section */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
-        <h2 className="text-xl font-bold mb-4">IT skills ✅</h2>
+        <h2 className="text-xl font-bold mb-4">IT skills </h2>
         <p className="text-gray-600 mb-4">Show your technical expertise by mentioning softwares and skills you know</p>
         {itSkills.name && (
           <div className="space-y-2">
@@ -252,7 +252,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
 
       {/* Project Section */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
-        <h2 className="text-xl font-bold mb-4">Project ✅</h2>
+        <h2 className="text-xl font-bold mb-4">Project </h2>
         <p className="text-gray-600 mb-4">Stand out to employers by adding details about projects that you have done so far</p>
         {project.title && (
           <div className="space-y-2">
@@ -271,7 +271,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
 
       {/* Profile Summary Section */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative mb-12">
-        <h2 className="text-xl font-bold mb-4">Profile Summary ✅</h2>
+        <h2 className="text-xl font-bold mb-4">Profile Summary </h2>
         <p className="text-gray-600 mb-4">Highlight your key career achievements to help employers know your potential</p>
         {profileSummary && (
           <div className="bg-gray-50 p-4 rounded-md">
