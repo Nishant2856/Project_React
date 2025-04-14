@@ -288,7 +288,7 @@ const Footer = () => {
                   onClick={() => openReportPopup('issue')}
                   className="hover:underline text-left w-full"
                 >
-                  Report issues
+                  Report issue
                 </button>
               </li>
             </ul>
