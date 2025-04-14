@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiMenu, FiX } from "react-icons/fi"; // Menu icons
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [companiesOpen, setCompaniesOpen] = useState(false);
-  
-  // Ref for the dropdown
   const dropdownRef = useRef(null);
+  const navigate = useNavigate(); // ✅ Hook for navigation
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -22,10 +21,13 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-md py-4 px-6 md:px-10 flex items-center justify-between relative">
-      {/* Logo */}
-      <Link to="/">
-        <img src="/logo1.png" alt="Job Vault Logo" className="h-10 w-auto" />
-      </Link>
+      {/* Logo - Clicking redirects to Admin Login ✅ */}
+      <img 
+        src="/logo1.png" 
+        alt="Job Vault Logo" 
+        className="h-10 w-auto cursor-pointer" 
+        onClick={() => navigate("/admin-login")} // ✅ Redirects to Admin Login
+      />
 
       {/* Desktop Menu */}
       <div className="hidden md:flex space-x-6 items-center">

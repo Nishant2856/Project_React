@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const Jobs = () => {
+const AJob = () => {
   const navigate = useNavigate();
 
   return (
@@ -84,7 +84,7 @@ const Jobs = () => {
                 <div className="flex justify-center">
                   <button 
                     className="mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
-                    onClick={() => navigate("/all-jobs")}
+                    onClick={() => navigate("/aall-jobs")}
                   >
                     View Jobs
                   </button>
@@ -97,7 +97,7 @@ const Jobs = () => {
           <div className="text-center mt-16">
             <button
               className="bg-blue-600 text-white px-10 py-3 rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 text-lg font-medium"
-              onClick={() => navigate("/all-companies")}
+              onClick={() => navigate("/aall-companies")}
             >
               View all companies →
             </button>
@@ -147,4 +147,4 @@ const Jobs = () => {
   );
 };
 
-export default Jobs;
+export default AJob;

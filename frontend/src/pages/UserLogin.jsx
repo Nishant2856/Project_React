@@ -1,18 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
 const UserLogin = () => {
   const navigate = useNavigate();
 
+  // Check if user is already authenticated on component mount
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("applicantAuth") === "true";
+    if (isAuthenticated) {
+      navigate("/ajob");
+    }
+  }, [navigate]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    // Store authentication status in localStorage
+    localStorage.setItem("applicantAuth", "true");
+    navigate("/ajob");
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-50 px-4">
       <div className="relative flex max-w-4xl w-full">
         {/* Left Section */}
         <div className="relative hidden md:flex flex-col items-center justify-center bg-gray-50 p-8 w-2/4 rounded-lg shadow-lg">
-          {/* Image at the top */}
           <img src="/login.jpeg" alt="Info" className="h-20 mb-4" />
-
           <h2 className="text-xl font-semibold">New to Job?</h2>
           <ul className="mt-4 space-y-2 text-sm text-gray-600">
             <li className="flex items-center">
@@ -30,9 +43,8 @@ const UserLogin = () => {
           </ul>
         </div>
 
-        {/* Right Section (Overlapping) */}
+        {/* Right Section */}
         <div className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-8 w-1/2 rounded-lg shadow-lg">
-          {/* Close Button */}
           <button
             onClick={() => navigate("/")}
             className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
@@ -42,13 +54,14 @@ const UserLogin = () => {
 
           <h2 className="text-xl font-semibold mb-6 text-center">Login</h2>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div>
               <label className="block text-gray-700 font-medium">Email ID / Username</label>
               <input
                 type="email"
                 placeholder="Enter Email / Username"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                required
               />
             </div>
 
@@ -58,18 +71,21 @@ const UserLogin = () => {
                 type="password"
                 placeholder="Enter Password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                required
               />
               <div className="text-right text-blue-500 text-sm cursor-pointer mt-1">
                 Forgot Password?
               </div>
             </div>
 
-            <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+            <button 
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+            >
               Login
             </button>
           </form>
 
-          {/* Register Link */}
           <div className="text-center text-sm text-gray-600 mt-4">
             Don't have an account? 
             <span 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaUserTie, FaFileAlt, FaLaptopCode, FaChartLine, FaHandshake, FaComments } from 'react-icons/fa';
 
-const Services = () => {
+const Services2 = () => {
   // Common interview questions and answers
   const interviewQuestions = [
     {
@@ -224,4 +224,4 @@ const Services = () => {
   );
 };
 
-export default Services;
+export default Services2;

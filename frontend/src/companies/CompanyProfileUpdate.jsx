@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
-const CompanySignup = () => {
+const CompanyProfileUpdate = () => {
   const navigate = useNavigate();
 
   return (
@@ -10,7 +10,7 @@ const CompanySignup = () => {
       <div className="relative bg-white shadow-lg rounded-lg p-8 w-full max-w-lg py-10">
         {/* Cut Button */}
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("company-profile")}
           className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
         >
           <X size={24} />
@@ -18,10 +18,10 @@ const CompanySignup = () => {
 
         {/* Form Title */}
         <h2 className="text-2xl font-semibold text-gray-900 text-center">
-          Create your Company profile
+          Update your Company profile
         </h2>
         <p className="text-sm text-gray-600 text-center mb-6">
-          Search & apply to jobs from India’s No.1 Job Site
+          Keep your company details up-to-date
         </p>
 
         {/* Form Fields */}
@@ -40,15 +40,6 @@ const CompanySignup = () => {
             <input
               type="email"
               placeholder="Tell us your Email ID"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-medium">Password</label>
-            <input
-              type="password"
-              placeholder="Minimum 6 characters"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
@@ -80,15 +71,15 @@ const CompanySignup = () => {
             </div>
           </div>
 
-          {/* Register Button - Redirect to Company Login */}
+          {/* Update Button - Redirect to Company Profile */}
           <button
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
             onClick={(e) => {
               e.preventDefault(); 
-              navigate("/company-login");
+              navigate("/company-profile");
             }}
           >
-            Register Now
+            Update Profile
           </button>
         </form>
       </div>
@@ -96,4 +87,4 @@ const CompanySignup = () => {
   );
 };
 
-export default CompanySignup;
+export default CompanyProfileUpdate;

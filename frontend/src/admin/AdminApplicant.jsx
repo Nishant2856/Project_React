@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaTrash } from "react-icons/fa";
 
-const employees = [
+const applicants = [
   {
     id: 1,
     name: "NISHANT",
@@ -25,67 +25,75 @@ const employees = [
   },
 ];
 
-const EmployeeList = () => {
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+const AdminApplicant = () => {
+  const [applicantsList, setApplicantsList] = useState(applicants);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+
+  // Function to delete an applicant
+  const handleDelete = (id) => {
+    setApplicantsList(applicantsList.filter((applicant) => applicant.id !== id));
+  };
 
   return (
-    <div className="bg-blue-50 min-h-screen p-6 flex justify-center">
+    <div className="bg-gray-100 min-h-screen p-6 flex justify-center">
       <div className="w-7/8 lg:w-3/4">
-        <h2 className="text-2xl font-bold mb-6 text-center">Applicants List</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Applicants List</h2>
 
-        {employees.map((employee) => (
-          <div
-            key={employee.id}
-            className="bg-white shadow-md rounded-lg p-5 flex justify-between items-center mb-6"
-          >
-            {/* Profile Section */}
-            <div className="flex items-center space-x-20">
-              <img
-                src="/profile.jpg"
-                alt="User Avatar"
-                className="h-14 w-14 rounded-full border-2 border-blue-400"
-              />
-              <div>
-                <h3 className="text-lg font-bold">{employee.name}</h3>
-                <div className="text-gray-600 flex items-center space-x-2">
-                  <FaEnvelope className="text-gray-500" />
-                  <span>{employee.email}</span>
-                </div>
-                <div className="text-gray-600 flex items-center space-x-2">
-                  <FaPhone className="text-gray-500" />
-                  <span>{employee.phone}</span>
+        {applicantsList.length > 0 ? (
+          applicantsList.map((applicant) => (
+            <div
+              key={applicant.id}
+              className="bg-white shadow-md rounded-lg p-5 flex justify-between items-center mb-6"
+            >
+              {/* Profile Section */}
+              <div className="flex items-center space-x-20">
+                <img
+                  src="/profile.jpg"
+                  alt="User Avatar"
+                  className="h-14 w-14 rounded-full border-2 border-blue-400"
+                />
+                <div>
+                  <h3 className="text-lg font-bold">{applicant.name}</h3>
+                  <div className="text-gray-600 flex items-center space-x-2">
+                    <FaEnvelope className="text-gray-500" />
+                    <span>{applicant.email}</span>
+                  </div>
+                  <div className="text-gray-600 flex items-center space-x-2">
+                    <FaPhone className="text-gray-500" />
+                    <span>{applicant.phone}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-20">
-              {/* Resume Button */}
-              <button
-                className="bg-orange-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-orange-600"
-                onClick={() => setSelectedEmployee(employee)}
-              >
-                Resume/Document
-              </button>
-
-              {/* Accept & Reject in the Same Column */}
-              <div className="flex flex-col space-y-3">
-                <button className="bg-blue-500 text-white px-8 py-2 rounded-md font-semibold hover:bg-blue-600">
-                  Accept
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-20">
+                {/* Resume Button */}
+                <button
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-orange-600 transition"
+                  onClick={() => setSelectedApplicant(applicant)}
+                >
+                  Resume/Document
                 </button>
-                <button className="bg-red-500 text-white px-8 py-2 rounded-md font-semibold hover:bg-red-600">
-                  Reject
+
+                {/* Delete Button */}
+                <button
+                  onClick={() => handleDelete(applicant.id)}
+                  className="p-3 rounded-full bg-red-100 hover:bg-red-200 transition shadow-md"
+                >
+                  <FaTrash className="text-red-600 text-lg" />
                 </button>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-gray-500 text-center">No applicants found.</p>
+        )}
 
         {/* Show Profile Detail Modal */}
-        {selectedEmployee && (
+        {selectedApplicant && (
           <ProfileDetailsModal
-            employee={selectedEmployee}
-            onClose={() => setSelectedEmployee(null)}
+            applicant={selectedApplicant}
+            onClose={() => setSelectedApplicant(null)}
           />
         )}
       </div>
@@ -94,9 +102,9 @@ const EmployeeList = () => {
 };
 
 // Profile Details Modal Component
-const ProfileDetailsModal = ({ employee, onClose }) => {
+const ProfileDetailsModal = ({ applicant, onClose }) => {
   return (
-    <div className="fixed inset-0 bg-blue-50 bg-opacity-70 flex justify-center items-center overflow-y-auto">
+    <div className="fixed inset-0 bg-gray-100 bg-opacity-70 flex justify-center items-center overflow-y-auto">
       <div className="bg-white rounded-lg shadow-lg w-2/3 h-[90vh] p-8 relative flex flex-col">
         {/* Close Button */}
         <button
@@ -119,25 +127,25 @@ const ProfileDetailsModal = ({ employee, onClose }) => {
             className="h-24 w-24 rounded-full border-4 border-blue-400"
           />
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{employee.name}</h3>
+            <h3 className="text-xl font-bold text-gray-800">{applicant.name}</h3>
             <div className="text-gray-600 flex items-center space-x-2 mt-2">
               <FaEnvelope className="text-gray-500" />
-              <span>{employee.email}</span>
+              <span>{applicant.email}</span>
             </div>
             <div className="text-gray-600 flex items-center space-x-2 mt-2">
               <FaPhone className="text-gray-500" />
-              <span>{employee.phone}</span>
+              <span>{applicant.phone}</span>
             </div>
           </div>
         </div>
 
-        {/* Information Cards (One per Row) */}
+        {/* Information Cards */}
         <div className="space-y-8 flex-grow overflow-y-auto px-2">
           {/* Resume Section */}
           <div className="bg-white shadow-lg p-6 rounded-lg border border-gray-300">
             <h3 className="text-lg font-bold mb-3">Resume</h3>
             <hr className="border-gray-300 mb-4" />
-            <p>Here is the resume of {employee.name}</p>
+            <p>Here is the resume of {applicant.name}</p>
             <button className="mt-3 text-blue-600 underline hover:text-blue-800">
               SHOW
             </button>
@@ -183,6 +191,4 @@ const ProfileDetailsModal = ({ employee, onClose }) => {
   );
 };
 
-
-
-export default EmployeeList;
+export default AdminApplicant;
