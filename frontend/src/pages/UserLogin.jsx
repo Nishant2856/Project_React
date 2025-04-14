@@ -1,101 +1,86 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
 
 const UserLogin = () => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
 
-  // Check if user is already authenticated on component mount
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("applicantAuth") === "true";
-    if (isAuthenticated) {
-      navigate("/ajob");
-    }
-  }, [navigate]);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
-  const handleLogin = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Store authentication status in localStorage
-    localStorage.setItem("applicantAuth", "true");
-    navigate("/ajob");
+    setError('');
+    
+    try {
+      await authService.login(formData);
+      navigate('/dashboard'); // or wherever you want to redirect after login
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.');
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-blue-50 px-4">
-      <div className="relative flex max-w-4xl w-full">
-        {/* Left Section */}
-        <div className="relative hidden md:flex flex-col items-center justify-center bg-gray-50 p-8 w-2/4 rounded-lg shadow-lg">
-          <img src="/login.jpeg" alt="Info" className="h-20 mb-4" />
-          <h2 className="text-xl font-semibold">New to Job?</h2>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✅</span> One-click apply using Naukri profile.
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✅</span> Get relevant job recommendations.
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✅</span> Showcase profile to top companies.
-            </li>
-            <li className="flex items-center">
-              <span className="text-green-500 mr-2">✅</span> Track application status.
-            </li>
-          </ul>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
         </div>
-
-        {/* Right Section */}
-        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-8 w-1/2 rounded-lg shadow-lg">
-          <button
-            onClick={() => navigate("/")}
-            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition"
-          >
-            <X size={24} />
-          </button>
-
-          <h2 className="text-xl font-semibold mb-6 text-center">Login</h2>
-
-          <form className="space-y-4" onSubmit={handleLogin}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+          <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label className="block text-gray-700 font-medium">Email ID / Username</label>
+              <label htmlFor="email" className="sr-only">Email address</label>
               <input
+                id="email"
+                name="email"
                 type="email"
-                placeholder="Enter Email / Username"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
-
             <div>
-              <label className="block text-gray-700 font-medium">Password</label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <input
+                id="password"
+                name="password"
                 type="password"
-                placeholder="Enter Password"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
               />
-              <div className="text-right text-blue-500 text-sm cursor-pointer mt-1">
-                Forgot Password?
-              </div>
             </div>
-
-            <button 
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-            >
-              Login
-            </button>
-          </form>
-
-          <div className="text-center text-sm text-gray-600 mt-4">
-            Don't have an account? 
-            <span 
-              className="text-blue-500 cursor-pointer hover:underline ml-1"
-              onClick={() => navigate("/register")}
-            >
-              Register
-            </span>
           </div>
-        </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Sign in
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
