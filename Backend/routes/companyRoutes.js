@@ -1,6 +1,163 @@
 const express = require('express');
 const router = express.Router();
 const Company = require('../models/companyModel');
+const User = require('../models/userModel');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    const uploadPath = 'uploads/logos';
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: function(req, file, cb) {
+    cb(null, `company-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+// File filter for images only
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Not an image! Please upload only images.'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 2 // 2 MB limit
+  },
+  fileFilter: fileFilter
+});
+
+// Company Signup with file upload
+router.post('/signup', upload.single('logo'), async (req, res) => {
+  try {
+    // Extract user data from request
+    const { name, email, password, mobile, about, role } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      // Remove uploaded file if exists
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Email already registered'
+      });
+    }
+    
+    // Create a new user with company role
+    const user = await User.create({
+      name,
+      email,
+      password,
+      mobile,
+      role: 'company' // Force role to be company
+    });
+    
+    // Create company profile
+    const company = await Company.create({
+      user: user._id,
+      name,
+      description: about || `${name} - Company profile`,
+      industry: req.body.industry || 'Technology',
+      location: req.body.location || 'Remote',
+      website: req.body.website || 'https://example.com',
+      size: req.body.size || '1-10',
+      // Set logo path if file was uploaded
+      logo: req.file ? req.file.path : 'uploads/logos/default-company-logo.png'
+    });
+    
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '30d'
+    });
+    
+    // Return success response
+    res.status(201).json({
+      success: true,
+      token,
+      company: {
+        id: company._id,
+        name: company.name,
+        logo: company.logo,
+        user: user._id
+      }
+    });
+  } catch (error) {
+    // Remove uploaded file if exists
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    res.status(400).json({ 
+      success: false,
+      message: error.message 
+    });
+  }
+});
+
+// Company Login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find user with the email
+    const user = await User.findOne({ email, role: 'company' }).select('+password');
+    
+    // Check if user exists and password is correct
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid credentials or not a company account' 
+      });
+    }
+    
+    // Find the corresponding company profile
+    const company = await Company.findOne({ user: user._id });
+    
+    if (!company) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Company profile not found' 
+      });
+    }
+    
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '30d'
+    });
+    
+    // Return success response
+    res.status(200).json({
+      success: true,
+      token,
+      company: {
+        id: company._id,
+        name: company.name,
+        logo: company.logo,
+        user: user._id
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ 
+      success: false,
+      message: error.message 
+    });
+  }
+});
 
 // Get all companies
 router.get('/', async (req, res) => {

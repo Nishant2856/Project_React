@@ -36,10 +36,19 @@ const AppContent = () => {
   const location = useLocation();
   const [isCompanyLoggedIn, setIsCompanyLoggedIn] = useState(() => localStorage.getItem("companyAuth") === "true");
   const [isApplicantLoggedIn, setIsApplicantLoggedIn] = useState(() => localStorage.getItem("applicantAuth") === "true");
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [user, setUser] = useState(() => {
+    const userData = localStorage.getItem("user");
+    return userData ? JSON.parse(userData) : null;
+  });
 
   useEffect(() => {
     setIsCompanyLoggedIn(localStorage.getItem("companyAuth") === "true");
     setIsApplicantLoggedIn(localStorage.getItem("applicantAuth") === "true");
+    setToken(localStorage.getItem("token"));
+    
+    const userData = localStorage.getItem("user");
+    setUser(userData ? JSON.parse(userData) : null);
   }, [location]);
 
   const currentPath = location.pathname;
