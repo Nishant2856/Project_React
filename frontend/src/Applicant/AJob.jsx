@@ -1,45 +1,72 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const AJob = () => {
   const navigate = useNavigate();
+  const [featuredCompanies, setFeaturedCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Fetch registered companies from API for the featured section
+    const fetchCompanies = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get('/companies');
+        if (response.data.success) {
+          // Limit to 8 companies
+          setFeaturedCompanies(response.data.companies.slice(0, 8));
+        }
+      } catch (err) {
+        console.error("Error fetching companies:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
+  const popularTags = [
+    "All Jobs",
+    "Work from Home",
+    "MNC",
+    "Sales",
+    "Fresher",
+    "Engineering",
+    "Data Science",
+    "Software Developer",
+  ];
 
   return (
-    <div className="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen p-8 flex flex-col items-center">
-      {/* Title & Subtitle */}
-      <div className="mb-12 text-center">
-        <h2 className="text-4xl font-extrabold text-gray-900">
-          Find Your Dream Job Now
-        </h2>
-        <p className="text-lg text-gray-700 mt-4">
-          5 Lakh+ jobs waiting for you!
-        </p>
+    <div className="min-h-screen flex flex-col items-center bg-blue-50">
+      {/* Hero Section */}
+      <div className="w-full bg-blue-700 py-20 mb-16">
+        <div className="max-w-7xl mx-auto flex flex-col items-center">
+          <h1 className="text-5xl font-bold text-white text-center px-4">
+            Discover Your Dream Job Today
+          </h1>
+          <p className="text-blue-100 text-xl mt-6 text-center px-4 max-w-4xl">
+            Find jobs, career guidance, and the perfect role for your skills and experience
+          </p>
+          
+          {/* Search Bar */}
+          <div className="mt-12 w-full max-w-4xl flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 px-4">
+            <input
+              type="text"
+              placeholder="Job title, company, or keywords"
+              className="flex-1 px-6 py-4 rounded-lg shadow-lg text-lg"
+            />
+            <button className="bg-blue-900 text-white font-semibold px-8 py-4 rounded-lg shadow-lg hover:bg-blue-950 transition duration-300">
+              Search Jobs
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-16 w-full max-w-lg bg-white shadow-lg rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
-        <input
-          type="text"
-          placeholder="Enter skills, designation, or company name..."
-          className="p-4 w-2/3 border-none outline-none text-gray-700 text-lg"
-        />
-        <button className="w-1/3 bg-blue-600 text-white text-lg font-semibold px-6 py-4 hover:bg-blue-700 transition duration-300">
-          🔍 Search
-        </button>
-      </div>
-
-      {/* Job Category Tags */}
-      <div className="mb-20 flex flex-wrap justify-center gap-4">
-        {[
-          "Remote",
-          "MNC",
-          "Analytics",
-          "Data Science",
-          "Engineering",
-          "HR",
-          "Marketing",
-          "Project Manager",
-        ].map((tag) => (
+      {/* Popular Tags Section */}
+      <div className="flex flex-wrap justify-center gap-3 md:gap-5 mb-16 w-full max-w-6xl px-4">
+        {popularTags.map((tag) => (
           <span
             key={tag}
             className="bg-white text-gray-800 px-6 py-3 rounded-full shadow-md text-lg font-semibold cursor-pointer hover:bg-gray-100 hover:shadow-lg transition-all duration-300"
@@ -56,42 +83,51 @@ const AJob = () => {
             Featured companies actively hiring
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
-            {[
-              { name: "Firstsource", logo: "firstsource.gif", rating: 3.7, reviews: "4.5k+", description: "Leading Provider of transformational solutions." },
-              { name: "FIS", logo: "fis.gif", rating: 3.9, reviews: "5.5k+", description: "FIS is hiring 3 to 10yrs exp. in C++ & Mumps developer." },
-              { name: "Airtel", logo: "airtel.gif", rating: 4.0, reviews: "13.5k+", description: "Leading global telecom company." },
-              { name: "Reliance Retail", logo: "reliance.gif", rating: 3.9, reviews: "22.1k+", description: "Building India's largest retail company." },
-              { name: "TCS", logo: "tcs.gif", rating: 3.7, reviews: "88.4k+", description: "Explore challenging and exciting opportunities at TCS." },
-              { name: "Amazon", logo: "amazon.gif", rating: 4.1, reviews: "29.4k+", description: "World's largest Internet company." },
-              { name: "Apple", logo: "apple.gif", rating: 4.3, reviews: "534+", description: "Join us. Be you." },
-              { name: "Jio", logo: "jio.gif", rating: 3.9, reviews: "22.3k+", description: "True 5G is here to unlock the limitless era." },
-            ].map((company) => (
-              <div 
-                key={company.name} 
-                className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-2 hover:border-blue-300 transition-all duration-300 transform"
-              >
-                <div className="flex justify-center mb-4">
-                  <img 
-                    src={`/${company.logo}`} 
-                    alt={company.name} 
-                    className="h-16 object-contain transition-all duration-300 hover:scale-110" 
-                  />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-700"></div>
+            </div>
+          ) : featuredCompanies.length === 0 ? (
+            <p className="text-center text-gray-500">No companies found yet. Be the first to register!</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+              {featuredCompanies.map((company) => (
+                <div 
+                  key={company._id} 
+                  className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-2xl hover:-translate-y-2 hover:border-blue-300 transition-all duration-300 transform"
+                >
+                  <div className="flex justify-center mb-4">
+                    <img 
+                      src={company.logo && company.logo.startsWith('http') 
+                        ? company.logo 
+                        : `http://localhost:5000/${company.logo}`}
+                      alt={company.name} 
+                      className="h-16 object-contain transition-all duration-300 hover:scale-110"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/default-logo.png";
+                      }}
+                    />
+                  </div>
+                  <h4 className="text-xl font-semibold text-center mb-2">{company.name}</h4>
+                  <p className="text-sm text-gray-500 text-center mb-3">⭐ 4.0 | New</p>
+                  <p className="text-sm text-gray-600 text-center mb-4">
+                    {company.description.length > 80 
+                      ? company.description.substring(0, 80) + "..." 
+                      : company.description}
+                  </p>
+                  <div className="flex justify-center">
+                    <button 
+                      className="mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+                      onClick={() => navigate(`/aall-jobs?company=${encodeURIComponent(company.name)}`)}
+                    >
+                      View Jobs
+                    </button>
+                  </div>
                 </div>
-                <h4 className="text-xl font-semibold text-center mb-2">{company.name}</h4>
-                <p className="text-sm text-gray-500 text-center mb-3">⭐ {company.rating} | {company.reviews} reviews</p>
-                <p className="text-sm text-gray-600 text-center mb-4">{company.description}</p>
-                <div className="flex justify-center">
-                  <button 
-                    className="mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
-                    onClick={() => navigate("/aall-jobs")}
-                  >
-                    View Jobs
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Button to navigate to AllCompanies */}
           <div className="text-center mt-16">
