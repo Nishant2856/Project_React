@@ -61,11 +61,12 @@ router.post('/signup', upload.single('logo'), async (req, res) => {
     
     // Create a new user with company role
     const user = await User.create({
-      name,
+      name: email, // Use email as username to differentiate from company name
       email,
       password,
       mobile,
-      role: 'company' // Force role to be company
+      role: 'company', // Force role to be company
+      userType: 'company' // Add a user type field to clearly distinguish from regular users
     });
     
     // Create company profile
@@ -183,10 +184,17 @@ router.get('/:id', async (req, res) => {
       .populate({
         path: 'jobs',
         select: 'title type location status createdAt'
+      })
+      .populate({
+        path: 'user',
+        select: 'name email mobile' // Include the user information we need
       });
 
     if (!company) {
-      return res.status(404).json({ message: 'Company not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
     }
 
     res.status(200).json({
@@ -194,7 +202,10 @@ router.get('/:id', async (req, res) => {
       company
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 });
 
@@ -304,6 +315,70 @@ router.get('/search', async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+});
+
+// Create middleware to protect company routes
+const protectCompany = async (req, res, next) => {
+  try {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Not authorized to access this route' 
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    
+    if (!user || user.role !== 'company') {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Not authorized as a company' 
+      });
+    }
+    
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ 
+      success: false,
+      message: 'Not authorized to access this route' 
+    });
+  }
+};
+
+// Get current company profile
+router.get('/me/profile', protectCompany, async (req, res) => {
+  try {
+    const company = await Company.findOne({ user: req.user._id })
+      .populate('jobs')
+      .populate({
+        path: 'user',
+        select: 'name email mobile'
+      });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company profile not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      company
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 });
 

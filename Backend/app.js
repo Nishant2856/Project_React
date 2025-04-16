@@ -3,10 +3,25 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs');
 
 dotenv.config();
 
 const app = express();
+
+// Ensure uploads directories exist
+const profileUploadsDir = path.join(__dirname, 'uploads', 'profile');
+const logoUploadsDir = path.join(__dirname, 'uploads', 'logos');
+
+if (!fs.existsSync(profileUploadsDir)) {
+  fs.mkdirSync(profileUploadsDir, { recursive: true });
+  console.log('Created profile uploads directory');
+}
+
+if (!fs.existsSync(logoUploadsDir)) {
+  fs.mkdirSync(logoUploadsDir, { recursive: true });
+  console.log('Created logo uploads directory');
+}
 
 // Middleware
 app.use(cors());

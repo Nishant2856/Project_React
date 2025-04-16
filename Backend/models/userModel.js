@@ -21,6 +21,22 @@ const userSchema = new mongoose.Schema({
     minlength: 8,
     select: false
   },
+  logo: {
+    type: String,
+    default: 'uploads/profile/default-profile.png'
+  },
+  mobile: {
+    type: String,
+    required: [true, 'Please provide your mobile number']
+  },
+  address: {
+    type: String
+  },
+  userType: {
+    type: String,
+    enum: ['experienced', 'fresher'],
+    default: 'experienced'
+  },
   role: {
     type: String,
     enum: ['user', 'company', 'admin'],

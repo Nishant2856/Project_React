@@ -1,8 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const CompanyNavbar = ({ companyName }) => {
+const CompanyNavbar = () => {
   const location = useLocation();
+  const [companyData, setCompanyData] = useState({
+    name: "",
+    logo: ""
+  });
+
+  useEffect(() => {
+    // Get company data from localStorage
+    const companyString = localStorage.getItem("company");
+    if (companyString) {
+      try {
+        const company = JSON.parse(companyString);
+        setCompanyData({
+          name: company.name || "Company",
+          logo: company.logo || "/default-logo.png"
+        });
+      } catch (error) {
+        console.error("Error parsing company data:", error);
+      }
+    }
+  }, []);
 
   return (
     <nav className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
@@ -41,13 +61,17 @@ const CompanyNavbar = ({ companyName }) => {
 
       {/* Welcome Message and Profile Redirect */}
       <div className="flex items-center text-gray-700 font-medium">
-        <div className="mr-4">Welcome, Firstsource {companyName}</div>
-        {/* ✅ Clicking firstsource.gif will now navigate to /company/profile */}
+        <div className="mr-4">Welcome, {companyData.name}</div>
+        {/* Company logo with navigation to profile */}
         <Link to="/company/profile">
           <img
-            src="/firstsource.gif"
+            src={companyData.logo && companyData.logo.startsWith('http') ? companyData.logo : `http://localhost:5000/${companyData.logo}`}
             alt="Company Logo"
-            className="h-10 w-10 object-contain cursor-pointer"
+            className="h-10 w-10 object-cover rounded-full border-2 border-gray-300 shadow-sm"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/firstsource.gif"; // Fallback image if logo cannot be loaded
+            }}
           />
         </Link>
       </div>

@@ -45,7 +45,16 @@ const CompanyLogin = ({ setIsCompanyLoggedIn }) => {
       if (response.data.success) {
         // Store the token and company data
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("company", JSON.stringify(response.data.company));
+        
+        // Store complete company information
+        const companyData = {
+          id: response.data.company.id,
+          name: response.data.company.name,
+          logo: response.data.company.logo,
+          user: response.data.company.user
+        };
+        
+        localStorage.setItem("company", JSON.stringify(companyData));
         localStorage.setItem("companyAuth", "true");
         
         // Update the auth state

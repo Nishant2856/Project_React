@@ -11,11 +11,13 @@ const UserSignup = () => {
     password: "",
     mobile: "",
     address: "",
-    role: "user" // Default role for applicants
+    role: "user", // Default role for applicants
+    logo: null
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState("experienced"); // Default to experienced
+  const [logoPreview, setLogoPreview] = useState(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -34,6 +36,34 @@ const UserSignup = () => {
     });
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) {
+      // Make sure it's an image
+      if (!e.target.files[0].type.match('image.*')) {
+        setError('Please upload an image file');
+        return;
+      }
+      
+      // Check file size (max 2MB)
+      if (e.target.files[0].size > 2 * 1024 * 1024) {
+        setError('Image size should be less than 2MB');
+        return;
+      }
+      
+      setFormData({
+        ...formData,
+        logo: e.target.files[0]
+      });
+      
+      // Create a preview URL for the selected image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
   const handleUserTypeChange = (type) => {
     setUserType(type);
   };
@@ -44,8 +74,8 @@ const UserSignup = () => {
       return false;
     }
     
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
       return false;
     }
     
@@ -70,13 +100,45 @@ const UserSignup = () => {
     setLoading(true);
     
     try {
-      // Call the backend API
-      const userData = {
-        ...formData,
-        userType: userType // Add the user type (experienced/fresher)
-      };
+      // For handling file uploads, we need to use FormData
+      const signupData = new FormData();
       
-      const response = await api.post('/users/signup', userData);
+      // Explicitly add each field to FormData to ensure they are included
+      signupData.append('name', formData.name);
+      signupData.append('email', formData.email);
+      signupData.append('password', formData.password);
+      signupData.append('mobile', formData.mobile);
+      signupData.append('address', formData.address || '');
+      signupData.append('role', 'user');
+      signupData.append('userType', userType);
+      
+      // Add logo if exists
+      if (formData.logo) {
+        signupData.append('logo', formData.logo);
+      }
+      
+      // Debug: Log the form data being sent
+      console.log("Form data:", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password ? "***" : "missing",
+        mobile: formData.mobile,
+        userType: userType
+      });
+      
+      // We can't directly log FormData contents, so let's log each key
+      const formDataEntries = {};
+      for (let [key, value] of signupData.entries()) {
+        formDataEntries[key] = value instanceof File ? value.name : (key === 'password' ? "***" : value);
+      }
+      console.log("FormData entries:", formDataEntries);
+      
+      // Call the backend API
+      const response = await api.post('/users/signup', signupData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       if (response.data.success) {
         // Store the token and user data
@@ -90,7 +152,10 @@ const UserSignup = () => {
         setError("Registration failed. Please try again.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      console.error("Signup error:", err);
+      const errorMsg = err.response?.data?.message || "Registration failed. Please try again.";
+      console.error("Error details:", errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -186,7 +251,7 @@ const UserSignup = () => {
               <input
                 type="password"
                 name="password"
-                placeholder="Minimum 6 characters"
+                placeholder="Minimum 8 characters"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                 value={formData.password}
                 onChange={handleChange}
@@ -219,6 +284,34 @@ const UserSignup = () => {
                 value={formData.address}
                 onChange={handleChange}
               />
+            </div>
+
+            {/* Profile Picture Upload */}
+            <div>
+              <label className="block text-gray-700 font-medium">Profile Picture</label>
+              <div className="flex items-center space-x-4">
+                {logoPreview && (
+                  <div className="w-16 h-16 overflow-hidden rounded-full border border-gray-300">
+                    <img 
+                      src={logoPreview} 
+                      alt="Profile Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center border rounded-lg p-2">
+                    <span className="text-gray-500 mr-2">📁</span>
+                    <input 
+                      type="file" 
+                      className="w-full text-gray-500 cursor-pointer"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Max 2MB, image files only (.jpg, .png, .gif)</p>
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center space-x-4">
