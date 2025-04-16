@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FaPhone, FaEnvelope, FaInfoCircle, FaSignOutAlt, FaPen, FaTimes, FaCheck } from "react-icons/fa";
+import { FaPhone, FaEnvelope, FaInfoCircle, FaSignOutAlt, FaPen, FaTimes, FaCheck, FaMapMarkerAlt } from "react-icons/fa";
 
 const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {  
   const navigate = useNavigate();
   const [activePopup, setActivePopup] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
+  
+  // User data state
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+    logo: "",
+    address: "",
+    userType: ""
+  });
   
   // Form states
   const [skills, setSkills] = useState([]);
@@ -33,8 +43,30 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
   });
   const [profileSummary, setProfileSummary] = useState("");
 
+  useEffect(() => {
+    // Load user data from localStorage
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      try {
+        const user = JSON.parse(userString);
+        setUserData({
+          name: user.name || "",
+          email: user.email || "",
+          mobile: user.mobile || "",
+          logo: user.logo || "",
+          address: user.address || "",
+          userType: user.userType || "experienced"
+        });
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+
   const handleLogout = () => {
-    localStorage.removeItem("applicantAuth");  
+    localStorage.removeItem("applicantAuth");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setIsApplicantLoggedIn(false);
     navigate("/");  
   };
@@ -71,10 +103,15 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
     setActivePopup(null);
   };
 
-  const handleInputChange = (e, setter, field, isNested = false) => {
+  const handleInputChange = (e, setter, field, isNested = false, isProject = false) => {
     const value = e.target.value;
     if (isNested) {
       setter(prev => ({ ...prev, [field]: value }));
+    } else if (isProject) {
+      setter(prev => ({
+        ...prev,
+        [field]: value
+      }));
     } else {
       setter(value);
     }
@@ -114,55 +151,60 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50 flex flex-col items-center p-6">
-      {/* Header */}
-      <div className="w-full flex justify-between items-center p-4 bg-white shadow-md rounded-2xl">
-        <div className="flex items-center space-x-2">
-          <h1 className="text-2xl font-bold">
-            Welcome, <span className="text-black">Nishant</span>
-          </h1>
-          <img src="/profile.jpg" alt="Profile" className="h-12 w-12 rounded-full border-2 border-gray-300 shadow-md" />
-        </div>
+    <div className="min-h-screen bg-blue-50 flex flex-col items-center p-4 py-10">
+      {/* Top Bar with Logout */}
+      <div className="w-full flex justify-end mb-8 max-w-3xl px-4">
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded-md font-semibold flex items-center hover:bg-red-600 ml-auto"
+          className="bg-red-500 text-white px-4 py-2 rounded-md font-semibold flex items-center hover:bg-red-600"
         >
           <FaSignOutAlt className="mr-2" /> Sign Out
         </button>
       </div>
 
-      {/* Profile Card */}
-<div className="bg-white p-8 rounded-2xl shadow-lg mt-12 flex items-center w-3/4 relative">
-  <div className="mr-8">
-    <img src="/profile.jpg" alt="Profile" className="h-44 w-44 rounded-full border-4 border-gray-300 shadow-lg" />
-  </div>
-  <div className="flex-1">
-    <h2 className="text-2xl font-bold mb-2">Nishant</h2>
-    <hr className="my-2 border-gray-300" />
-    <div className="flex items-center space-x-8">
-      <div className="text-lg">
-        <p className="flex items-center text-gray-600 mb-2">
-          <FaPhone className="mr-3 text-blue-500" /> 4512762145
-        </p>
-        <p className="flex items-center text-gray-600">
-          <FaEnvelope className="mr-3 text-blue-500" />
-          nishant@gmail.com
-        </p>
+      {/* Profile Info Card */}
+      <div className="bg-white p-8 rounded-2xl shadow-lg mt-12 flex items-center w-3/4 relative">
+        <div className="mr-8">
+          <img 
+            src={userData.logo && userData.logo.startsWith('http') 
+              ? userData.logo 
+              : userData.logo.startsWith('uploads') 
+                ? `http://localhost:5000/${userData.logo}` 
+                : "/profile.jpg"}
+            alt="Profile" 
+            className="h-44 w-44 rounded-full border-4 border-gray-300 shadow-lg object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/profile.jpg"; // Fallback image
+            }}
+          />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold mb-2">{userData.name}</h2>
+          <hr className="my-2 border-gray-300" />
+          <div className="flex flex-col space-y-2">
+            <p className="flex items-center text-gray-600">
+              <FaPhone className="mr-3 text-blue-500" /> {userData.mobile || "Not provided"}
+            </p>
+            <p className="flex items-center text-gray-600">
+              <FaEnvelope className="mr-3 text-blue-500" /> {userData.email || "Not provided"}
+            </p>
+            {userData.address && (
+              <p className="flex items-center text-gray-600">
+                <FaMapMarkerAlt className="mr-3 text-blue-500" /> {userData.address}
+              </p>
+            )}
+            <p className="flex items-center text-gray-600 mt-2">
+              <FaInfoCircle className="mr-3 text-blue-500" /> 
+              {userData.userType === "experienced" ? "Experienced Professional" : "Fresher"}
+            </p>
+          </div>
+        </div>
+        <FaPen 
+          className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
+          onClick={() => navigate("/applicant-profile-update")}
+        />
       </div>
-      <div className="border-l-2 border-gray-300 pl-6 text-lg">
-        <p className="flex items-center text-gray-600">
-          <FaInfoCircle className="mr-2 text-blue-500" />
-          Welcome to my profile page
-        </p>
-      </div>
-    </div>
-  </div>
-  <FaPen 
-    className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
-    onClick={() => navigate("/applicant-profile-update")}
-  />
-</div>
-
 
       {/* Registered Company Card */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
