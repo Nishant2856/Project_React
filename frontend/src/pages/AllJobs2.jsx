@@ -85,7 +85,11 @@ const AllJobs2 = () => {
       <div className="p-6 w-full max-w-7xl"> 
         {/* Banner Section */}
         <div className="relative w-full h-72 rounded-xl overflow-hidden shadow-lg">
-          <div className="w-full h-full bg-gradient-to-r from-blue-600 to-blue-800"></div>
+          <img 
+            src="/show.jpg" 
+            alt="Job Banner" 
+            className="w-full h-full object-cover"
+          />
         </div>  
 
         {/* Job Card */}

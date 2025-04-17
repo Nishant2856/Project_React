@@ -108,10 +108,13 @@ const AAllJobs = () => {
 
   return (
     <div className="bg-blue-50 min-h-screen p-6">
-      {/* Background Section with Company Banner */}
+      {/* Background Section with Image */}
       <div className="relative w-full h-48 bg-gray-900 text-white overflow-hidden rounded-xl">
-        {/* If company has a banner, use it, otherwise use a default gradient */}
-        <div className="w-full h-full bg-gradient-to-r from-blue-600 to-blue-800 opacity-80"></div>
+        <img 
+          src="/show.jpg" 
+          alt="Jobs Banner" 
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Company Card */}
