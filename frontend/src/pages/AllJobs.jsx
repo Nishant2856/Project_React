@@ -169,7 +169,7 @@ const AllJobs = () => {
               {/* View Details Button */}
               <div className="absolute bottom-3 right-3">
                 <button
-                  onClick={() => navigate(`/job/${job._id}`)}
+                  onClick={() => navigate(`/all-jobs-2?jobId=${job._id}`)}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs hover:bg-blue-700 transition"
                 >
                   View Details
