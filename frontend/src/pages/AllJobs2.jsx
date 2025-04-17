@@ -45,9 +45,11 @@ const AllJobs2 = () => {
     }
   };
 
-  // Handle button click - Redirect to login page
+  // Handle button click - Redirect to login page with job info
   const handleInterestClick = () => {
-    navigate("/login");
+    // Store job ID in localStorage to retrieve after login
+    localStorage.setItem('interestedJobId', job._id);
+    navigate("/login?redirect=apply");
   };
 
   if (loading) {

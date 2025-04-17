@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import applicationService from '../services/applicationService';
 
 const AAllJobs2 = () => {
   const navigate = useNavigate();
@@ -25,21 +26,27 @@ const AAllJobs2 = () => {
       setToken(tokenStr);
     }
     
-    fetchJobData();
+    // Check if there's a job ID from the interested flow
+    const interestedJobId = localStorage.getItem('interestedJobId');
+    const searchParams = new URLSearchParams(location.search);
+    const jobId = searchParams.get("jobId") || interestedJobId;
+    
+    if (jobId) {
+      fetchJobData(jobId);
+      
+      // Clear the interested job ID
+      if (interestedJobId) {
+        localStorage.removeItem('interestedJobId');
+      }
+    } else {
+      setError("No job ID provided");
+      setLoading(false);
+    }
   }, [location.search]);
 
-  const fetchJobData = async () => {
+  const fetchJobData = async (jobId) => {
     setLoading(true);
     try {
-      const searchParams = new URLSearchParams(location.search);
-      const jobId = searchParams.get("jobId");
-
-      if (!jobId) {
-        setError("No job ID provided");
-        setLoading(false);
-        return;
-      }
-
       console.log("Fetching job data for ID:", jobId);
 
       // Fetch job data using company-jobs endpoint
@@ -93,7 +100,7 @@ const AAllJobs2 = () => {
     }
   };
 
-  const toggleApplicationStatus = async () => {
+  const applyForJob = async () => {
     // Check if user is authenticated as applicant
     const isApplicant = localStorage.getItem('applicantAuth') === 'true';
     const userStr = localStorage.getItem('user');
@@ -112,77 +119,33 @@ const AAllJobs2 = () => {
 
     setIsSubmitting(true);
     try {
-      const user = JSON.parse(userStr);
-      
-      // Check user role first
-      try {
-        const roleCheckResponse = await axios.get(
-          'http://localhost:5000/api/applications/debug-role',
-          {
-            headers: {
-              Authorization: `Bearer ${tokenStr}`
-            }
-          }
-        );
-        
-        console.log('User role check:', roleCheckResponse.data);
-        
-        if (roleCheckResponse.data.user.role !== 'user') {
-          alert(`You are logged in as '${roleCheckResponse.data.user.role}', but need to be logged in as 'user' to apply for jobs.`);
-          setIsSubmitting(false);
-          return;
-        }
-      } catch (roleErr) {
-        console.error("Error checking user role:", roleErr);
-        // Continue with the application attempt even if role check fails
-      }
-      
-      console.log("Sending application data:", {
-        jobId: job._id,
-        company: job.company._id
-      });
-      
-      // Submit application to the server
-      const response = await axios.post(
-        'http://localhost:5000/api/applications/apply',
-        {
-          jobId: job._id,
-          company: job.company._id
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${tokenStr}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Basic application data
+      const applicationData = {
+        resume: 'uploads/resume/default-resume.pdf', // Default resume (should be updated to use user's real resume)
+        experience: 'Previous experience in the field',
+        skills: ['Skill 1', 'Skill 2']
+      };
 
-      console.log("Application response:", response.data);
+      // Use the applicationService to apply for the job
+      const response = await applicationService.applyForJob(job._id, applicationData);
 
-      if (response.data && response.data.success) {
+      if (response.success) {
         // Update local state to reflect the application
         setApplicationStatus("applied");
         
         // Show success message
         alert("Application submitted successfully!");
         
-        // Store application success in localStorage to prevent issues with page reloads
-        localStorage.setItem('applicationSubmitted', 'true');
-        localStorage.setItem('applicantAuth', 'true');
-        
-        // No navigation to status page - just show "Applied"
+        // Navigate to application status page
+        navigate('/application-status');
       } else {
         alert("Something went wrong. Please try again.");
       }
     } catch (err) {
       console.error("Error submitting application:", err);
       
-      if (err.response) {
-        console.error("Error response:", err.response.data);
-      }
-      
-      if (err.response && err.response.data && err.response.data.message) {
-        alert(`Failed to submit application: ${err.response.data.message}`);
+      if (err.message) {
+        alert(`Failed to submit application: ${err.message}`);
       } else {
         alert("Failed to submit application. Please try again.");
       }
@@ -323,15 +286,21 @@ const AAllJobs2 = () => {
               })}
             </p>
             <button 
-              className={`px-6 py-2 rounded-full shadow-md text-white ${
-                applicationStatus === "applied" 
-                  ? "bg-green-600 hover:bg-green-700" 
+              className={`${
+                applicationStatus === "applied"
+                  ? "bg-green-600"
+                  : isSubmitting
+                  ? "bg-gray-400"
                   : "bg-blue-600 hover:bg-blue-700"
-              }`}
-              onClick={toggleApplicationStatus}
-              disabled={isSubmitting || applicationStatus === "applied"}
+              } text-white px-6 py-2 rounded-full shadow-md transition-colors`}
+              onClick={applyForJob}
+              disabled={applicationStatus === "applied" || isSubmitting}
             >
-              {isSubmitting ? "Submitting..." : applicationStatus === "applied" ? "Applied" : "I am interested"}
+              {applicationStatus === "applied" 
+                ? "Applied ✓" 
+                : isSubmitting 
+                ? "Applying..." 
+                : "Apply Now"}
             </button>
           </div>
         </div>

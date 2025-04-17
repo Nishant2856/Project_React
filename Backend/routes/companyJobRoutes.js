@@ -266,4 +266,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get job details by ID (public route)
+router.get('/details/:id', async (req, res) => {
+  try {
+    const job = await CompanyJob.findById(req.params.id)
+      .populate('company', 'name logo website rating')
+      .lean();
+    
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: job
+    });
+  } catch (error) {
+    console.error('Error fetching job details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch job details'
+    });
+  }
+});
+
 module.exports = router; 
