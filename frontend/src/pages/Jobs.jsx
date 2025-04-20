@@ -41,12 +41,12 @@ const Jobs = () => {
   return (
     <div className="min-h-screen flex flex-col items-center bg-blue-50">
       {/* Hero Section */}
-      <div className="w-full bg-blue-700 py-20 mb-16">
+      <div className="w-full bg-blue-50 py-20 mb-16">
         <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <h1 className="text-5xl font-bold text-white text-center px-4">
+          <h1 className="text-5xl font-bold text-black text-center px-4">
             Discover Your Dream Job Today
           </h1>
-          <p className="text-blue-100 text-xl mt-6 text-center px-4 max-w-4xl">
+          <p className="text-blue-700 text-xl mt-6 text-center px-4 max-w-4xl">
             Find jobs, career guidance, and the perfect role for your skills and experience
           </p>
           

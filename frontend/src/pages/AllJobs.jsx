@@ -1,106 +1,161 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const AllJobs = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [company, setCompany] = useState(null);
+  const [jobs, setJobs] = useState([]);
 
-  const jobs = [
-    {
-      title: "Senior AR Caller - Experienced",
-      company: "Firstsource",
-      rating: "3.7",
-      reviews: "4.5k+",
-      experience: "1-4 Yrs",
-      salary: "Not disclosed",
-      location: "Chennai",
-      description:
-        "Minimum 1.5 years experience in Physician or Hospital Billing, knowledge in AR Calling and Denial Management.",
-      tags: [
-        "Revenue cycle management",
-        "AR Calling",
-        "US Healthcare",
-        "Denial Management",
-        "Medical Billing",
-      ],
-      logo: "/firstsource.gif",
-      isNew: true,
-    },
-    {
-      title: "International Chat Process - Non Voice",
-      company: "Firstsource",
-      rating: "3.7",
-      reviews: "4.5k+",
-      experience: "0 Yrs",
-      salary: "2-3.5 Lacs PA",
-      location: "Mumbai, Mumbai Suburban, Malad west",
-      description:
-        "Graduate or HSC with customer service skills. Provide customer service via chat, update accounts, and handle queries.",
-      tags: ["Non Voice", "Email Process", "Chat Support", "Web Chat"],
-      logo: "/firstsource.gif",
-      isNew: false,
-    },
-    {
-      title: "Back Office Executive",
-      company: "Firstsource",
-      rating: "3.7",
-      reviews: "4.5k+",
-      experience: "0 Yrs",
-      salary: "1.2-2.5 Lacs PA",
-      location: "Mumbai, Mumbai Suburban",
-      description:
-        "HSC with 1 year experience or graduate freshers (excluding B.Tech/B.E.). Back office support including data entry and email process.",
-      tags: ["Back Office", "Non Voice", "Data Entry", "Email Process"],
-      logo: "/firstsource.gif",
-      isNew: true,
-    },
-  ];
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const companyName = searchParams.get("company");
+    
+    fetchData(companyName);
+  }, [location.search]);
+
+  const fetchData = async (companyName) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      if (companyName) {
+        // Fetch all companies first
+        const companyResponse = await axios.get(`http://localhost:5000/api/companies`);
+        const allCompanies = companyResponse.data.companies;
+        
+        // Find the company by name
+        const foundCompany = allCompanies.find(c => c.name.toLowerCase() === companyName.toLowerCase());
+        
+        if (foundCompany) {
+          setCompany(foundCompany);
+          
+          // Fetch jobs for this company
+          const jobsResponse = await axios.get(`http://localhost:5000/api/company-jobs`);
+          const allJobs = jobsResponse.data.data;
+          
+          // Filter jobs for this company
+          const companyJobs = allJobs.filter(job => job.company._id === foundCompany._id);
+          setJobs(companyJobs);
+        } else {
+          setError("Company not found");
+        }
+      } else {
+        // Fetch all jobs
+        const jobsResponse = await axios.get(`http://localhost:5000/api/company-jobs`);
+        setJobs(jobsResponse.data.data);
+        
+        // Set default company from the first job if available
+        if (jobsResponse.data.data.length > 0) {
+          const firstJobCompanyId = jobsResponse.data.data[0].company._id;
+          
+          // Fetch detailed company info
+          const companyResponse = await axios.get(`http://localhost:5000/api/companies/${firstJobCompanyId}`);
+          setCompany(companyResponse.data.company);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load jobs data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-blue-50 min-h-screen p-6 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-700"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-blue-50 min-h-screen p-6 flex justify-center items-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Error</h2>
+          <p>{error}</p>
+          <button 
+            onClick={() => navigate("/all-jobs")}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            Back to Jobs
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!company || jobs.length === 0) {
+    return (
+      <div className="bg-blue-50 min-h-screen p-6 flex justify-center items-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <h2 className="text-xl font-bold mb-4">No Jobs Found</h2>
+          <p>There are no jobs available at the moment.</p>
+          <button 
+            onClick={() => navigate("/all-jobs")}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            Back to Jobs
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-blue-50 min-h-screen p-6">
-      {/* Background Section with Overlay */}
-      <div className="relative w-full h-full bg-gray-900 text-white overflow-hidden rounded-xl">
-        <img
-          src="/firstsource_banner.jpg"
-          alt="Company Banner"
-          className="w-full h-full object-cover opacity-80 rounded-xl"
+      {/* Background Section with Image */}
+      <div className="relative w-full h-48 bg-gray-900 text-white overflow-hidden rounded-xl">
+        <img 
+          src="/show.jpg" 
+          alt="Jobs Banner" 
+          className="w-full h-full object-cover"
         />
       </div>
 
       {/* Company Card */}
       <div className="relative bg-white shadow-lg rounded-lg -mt-16 p-6 max-w-6xl mx-auto flex items-center">
         <img
-          src="/firstsource.gif"
-          alt="Firstsource"
-          className="w-20 h-20 rounded-full shadow-md border-2 border-gray-200 mr-4"
+          src={company.logo ? (company.logo.startsWith('http') ? company.logo : `http://localhost:5000/${company.logo}`) : "/default-logo.png"}
+          alt={company.name}
+          className="w-20 h-20 rounded-full shadow-md border-2 border-gray-200 mr-4 object-cover"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/default-logo.png";
+          }}
         />
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Firstsource</h2>
-          <p className="text-yellow-600 text-sm">
-            ⭐ 3.7 ({jobs[0].reviews} reviews)
-          </p>
-          <p className="text-gray-600 text-sm">Digital first, digital now</p>
+          <h2 className="text-2xl font-bold text-gray-800">{company.name}</h2>
+          <p className="text-yellow-600 text-sm">⭐ {company.rating || "New"}</p>
+          <p className="text-gray-600 text-sm">{company.industry || company.tagline}</p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-6 grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <h3 className="text-xl font-bold mb-4">Jobs</h3>
-          {jobs.map((job, index) => (
+      <div className="max-w-6xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <h3 className="text-xl font-bold mb-4">Jobs {jobs.length > 0 ? `(${jobs.length})` : ""}</h3>
+          {jobs.map((job) => (
             <div
-              key={index}
+              key={job._id}
               className="relative bg-white p-4 rounded-lg shadow-md mb-4 hover:shadow-lg transition"
             >
               <h4 className="text-lg font-semibold">{job.title}</h4>
               <p className="text-gray-600">
-                {job.company} ⭐ {job.rating} ({job.reviews} reviews)
+                {job.company?.name || company.name} {company.rating && <span>⭐ {company.rating}</span>}
               </p>
               <p className="text-sm text-gray-500">📍 {job.location}</p>
               <p className="text-sm text-gray-500">
-                💼 {job.experience} | 💰 {job.salary}
+                💼 {job.years ? `${job.years} Yrs` : "Not specified"} | 
+                💰 {job.salary || "Not disclosed"}
               </p>
-              <p className="text-sm text-gray-700 mt-2">{job.description}</p>
+              
               <div className="flex flex-wrap mt-2">
-                {job.tags.map((tag, idx) => (
+                {job.tags && job.tags.map((tag, idx) => (
                   <span
                     key={idx}
                     className="bg-gray-200 text-xs px-2 py-1 rounded-full mr-2 mb-2"
@@ -109,14 +164,16 @@ const AllJobs = () => {
                   </span>
                 ))}
               </div>
-              {job.isNew && (
+              
+              {/* New indicator based on creation date */}
+              {job.createdAt && new Date(job.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
                 <span className="text-red-500 text-xs font-semibold">New</span>
               )}
               
-              {/* View Details Button (Bottom Right) */}
+              {/* View Details Button */}
               <div className="absolute bottom-3 right-3">
                 <button
-                  onClick={() => navigate(`/all-jobs-2`)}
+                  onClick={() => navigate(`/all-jobs-2?jobId=${job._id}`)}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs hover:bg-blue-700 transition"
                 >
                   View Details
@@ -130,36 +187,27 @@ const AllJobs = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold">About Us</h3>
           <p className="text-sm text-gray-600">
-            Firstsource is purpose-led and people-first. We create value for our
-            global clients by elevating their customers’ experience at every
-            interaction, be it a call, click, tap, message, or chat. Delivering
-            a great experience to clients starts on the inside – by connecting
-            every Firstsourcer to the role’s purpose. We upskill our people in
-            new-age technologies and focus on supporting their physical,
-            financial, and mental well-being. The result? Everyone aligned to
-            our ‘Digital First, Digital Now’ strategy, our north star, where we
-            pair technology and human touch.
+            {company.description || "No description available."}
           </p>
           <h3 className="text-lg font-semibold mt-4">More Information</h3>
           <ul className="text-sm text-gray-600">
             <li>
-              <strong>Type:</strong> Public
+              <strong>Industry:</strong> {company.industry || company.companyType || "Not specified"}
             </li>
             <li>
-              <strong>Company Size:</strong> 10000-50000
+              <strong>Company Size:</strong> {company.size || "Not specified"}
             </li>
             <li>
-              <strong>Founded:</strong> 2001
+              <strong>Location:</strong> {company.location || company.headquarters || "Not specified"}
             </li>
-            <li>
-              <strong>Headquarters:</strong> Mumbai, Maharashtra
-            </li>
-            <li>
-              <strong>Website:</strong>{" "}
-              <a href="https://www.firstsource.com/" className="text-blue-500">
-                Visit
-              </a>
-            </li>
+            {company.website && (
+              <li>
+                <strong>Website:</strong>{" "}
+                <a href={company.website} className="text-blue-500" target="_blank" rel="noopener noreferrer">
+                  Visit
+                </a>
+              </li>
+            )}
           </ul>
         </div>
       </div>

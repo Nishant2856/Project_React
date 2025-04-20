@@ -66,7 +66,7 @@ router.post('/signup', upload.single('logo'), async (req, res) => {
       password,
       mobile,
       role: 'company', // Force role to be company
-      userType: 'company' // Add a user type field to clearly distinguish from regular users
+      userType: 'experienced' // Use a valid userType value that's already in the enum
     });
     
     // Create company profile
