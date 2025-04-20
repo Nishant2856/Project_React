@@ -185,6 +185,12 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
       {/* Top Bar with Logout */}
       <div className="w-full flex justify-end mb-8 max-w-3xl px-4">
         <button
+          onClick={() => navigate("/ajob")}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md font-semibold flex items-center hover:bg-blue-600 mr-4"
+        >
+          Back to Jobs
+        </button>
+        <button
           onClick={handleLogout}
           className="bg-red-500 text-white px-4 py-2 rounded-md font-semibold flex items-center hover:bg-red-600"
         >
