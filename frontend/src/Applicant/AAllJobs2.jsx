@@ -21,9 +21,26 @@ const AAllJobs2 = () => {
     const isApplicant = localStorage.getItem('applicantAuth') === 'true';
     
     if (userStr && tokenStr && isApplicant) {
-      const user = JSON.parse(userStr);
-      setApplicantId(user._id);
-      setToken(tokenStr);
+      try {
+        const user = JSON.parse(userStr);
+        console.log('Loaded user from localStorage:', user);
+        
+        // Check for different ID properties (id or _id)
+        const userId = user.id || user._id;
+        
+        // Ensure user has valid ID
+        if (userId) {
+          setApplicantId(userId);
+          setToken(tokenStr);
+          console.log('Set applicant ID:', userId);
+        } else {
+          console.error('User object missing ID:', user);
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    } else {
+      console.log('Missing auth data:', { userStr: !!userStr, tokenStr: !!tokenStr, isApplicant });
     }
     
     // Check if there's a job ID from the interested flow
@@ -62,6 +79,9 @@ const AAllJobs2 = () => {
         return;
       }
 
+      // Skip application check for now - we can implement this later
+      // when we get the endpoint working properly
+      /*
       // Check if the applicant has already applied for this job
       const userStr = localStorage.getItem('user');
       const tokenStr = localStorage.getItem('token');
@@ -71,27 +91,38 @@ const AAllJobs2 = () => {
         try {
           const user = JSON.parse(userStr);
           
-          console.log("Checking application status for user:", user._id, "and job:", jobId);
+          // Check for different ID properties (id or _id)
+          const userId = user.id || user._id;
           
-          const applicationResponse = await axios.get(
-            `http://localhost:5000/api/applications/check/${user._id}/${jobId}`,
-            { 
-              headers: {
-                Authorization: `Bearer ${tokenStr}`
+          if (userId) {
+            console.log("Checking application status for user:", userId, "and job:", jobId);
+            
+            // Use the new check endpoint
+            const applicationResponse = await axios.get(
+              `http://localhost:5000/api/applicants/check/${jobId}`,
+              { 
+                headers: {
+                  Authorization: `Bearer ${tokenStr}`
+                }
               }
+            );
+            
+            console.log("Application check response:", applicationResponse.data);
+            
+            if (applicationResponse.data.hasApplied) {
+              setApplicationStatus("applied");
             }
-          );
-          
-          console.log("Application check response:", applicationResponse.data);
-          
-          if (applicationResponse.data.hasApplied) {
-            setApplicationStatus("applied");
+          } else {
+            console.error("Invalid user data, missing ID:", user);
           }
         } catch (err) {
           console.error("Error checking application status:", err);
           // Don't set error state here, as we want to show the job anyway
         }
+      } else {
+        console.log("User not authenticated as applicant");
       }
+      */
     } catch (err) {
       console.error("Error fetching job data:", err);
       setError("Failed to load job data. Please try again later.");
@@ -112,6 +143,25 @@ const AAllJobs2 = () => {
       return;
     }
 
+    // Parse the user object to get ID
+    let userId;
+    try {
+      const user = JSON.parse(userStr);
+      userId = user.id || user._id; // Check both ID formats
+      
+      if (!userId) {
+        console.error('User object has no ID:', user);
+        alert('Authentication issue detected. Please log out and log in again.');
+        return;
+      }
+      
+      console.log('Applying with user ID:', userId);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      alert('Authentication issue detected. Please log out and log in again.');
+      return;
+    }
+
     // If already applied, don't do anything
     if (applicationStatus === "applied") {
       return;
@@ -119,17 +169,38 @@ const AAllJobs2 = () => {
 
     setIsSubmitting(true);
     try {
+      if (!job || !job._id) {
+        throw new Error('Invalid job data');
+      }
+      
+      console.log(`Applying for job with ID: ${job._id}`);
+      
       // Basic application data
       const applicationData = {
-        resume: 'uploads/resume/default-resume.pdf', // Default resume (should be updated to use user's real resume)
-        experience: 'Previous experience in the field',
-        skills: ['Skill 1', 'Skill 2']
+        resume: 'uploads/resume/default-resume.pdf', // Default resume
+        experience: 'Experienced professional with relevant skills for this position',
+        skills: ['JavaScript', 'React', 'Node.js', 'Web Development'],
+        jobModel: 'CompanyJob' // Specify we're applying to a CompanyJob
       };
 
-      // Use the applicationService to apply for the job
-      const response = await applicationService.applyForJob(job._id, applicationData);
+      console.log('Submitting application with data:', applicationData);
 
-      if (response.success) {
+      // Use direct axios call for testing
+      console.log('Using axios directly to apply for job');
+      const response = await axios.post(
+        `http://localhost:5000/api/applicants/${job._id}`, 
+        applicationData,
+        {
+          headers: {
+            'Authorization': `Bearer ${tokenStr}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('Application response:', response.data);
+
+      if (response.data.success) {
         // Update local state to reflect the application
         setApplicationStatus("applied");
         
@@ -139,12 +210,14 @@ const AAllJobs2 = () => {
         // Navigate to application status page
         navigate('/application-status');
       } else {
-        alert("Something went wrong. Please try again.");
+        alert(`Something went wrong: ${response.data.message || 'Please try again.'}`);
       }
     } catch (err) {
       console.error("Error submitting application:", err);
       
-      if (err.message) {
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(`Failed to submit application: ${err.response.data.message}`);
+      } else if (err.message) {
         alert(`Failed to submit application: ${err.message}`);
       } else {
         alert("Failed to submit application. Please try again.");

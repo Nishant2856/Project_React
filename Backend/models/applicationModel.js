@@ -3,8 +3,13 @@ const mongoose = require('mongoose');
 const applicationSchema = new mongoose.Schema({
   job: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Job',
+    refPath: 'jobModel',
     required: [true, 'Application must belong to a job']
+  },
+  jobModel: {
+    type: String,
+    enum: ['Job', 'CompanyJob'],
+    default: 'CompanyJob'
   },
   applicant: {
     type: mongoose.Schema.ObjectId,
