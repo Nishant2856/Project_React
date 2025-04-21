@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaPhone, FaEnvelope, FaInfoCircle, FaSignOutAlt, FaPen, FaTimes, FaCheck, FaMapMarkerAlt, FaPlus, FaTrash, FaSave } from "react-icons/fa";
+import profileService from "../services/profileService";
 
 const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {  
   const navigate = useNavigate();
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState(false);
   
   // User data state
   const [userData, setUserData] = useState({
@@ -50,26 +53,73 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
   const [newSkill, setNewSkill] = useState("");
 
   useEffect(() => {
-    // Load user data from localStorage
-    const userString = localStorage.getItem("user");
-    if (userString) {
+    const fetchData = async () => {
       try {
-        const user = JSON.parse(userString);
-        setUserData({
-          name: user.name || "",
-          email: user.email || "",
-          mobile: user.mobile || "",
-          logo: user.logo || "",
-          address: user.address || "",
-          userType: user.userType || "experienced"
-        });
+        setLoading(true);
+        
+        // Load user data from localStorage
+        const userString = localStorage.getItem("user");
+        if (userString) {
+          try {
+            const user = JSON.parse(userString);
+            setUserData({
+              name: user.name || "",
+              email: user.email || "",
+              mobile: user.mobile || "",
+              logo: user.logo || "",
+              address: user.address || "",
+              userType: user.userType || "experienced"
+            });
+          } catch (error) {
+            console.error("Error parsing user data:", error);
+          }
+        }
+        
+        // Fetch profile data from the backend
+        const profileResponse = await profileService.getMyProfile();
+        console.log("Fetched profile data:", profileResponse);
+        
+        if (profileResponse.success && profileResponse.profile) {
+          const profile = profileResponse.profile;
+          
+          setProfileData({
+            resume: profile.resume || null,
+            skills: profile.skills || [],
+            education: profile.education || {
+              degree: "",
+              university: "",
+              course: "",
+              specialization: "",
+              duration: "",
+              type: "Full Time"
+            },
+            itSkills: profile.itSkills || {
+              name: "",
+              version: "",
+              lastUsed: "",
+              experience: ""
+            },
+            projects: profile.projects && profile.projects.length > 0 
+              ? profile.projects 
+              : [{
+                title: "",
+                client: "",
+                status: "In Progress",
+                workedFrom: "",
+                details: ""
+              }],
+            profileSummary: profile.profileSummary || ""
+          });
+        }
+        
+        setLoading(false);
       } catch (error) {
-        console.error("Error parsing user data:", error);
+        console.error("Error fetching profile data:", error);
+        setLoading(false);
       }
-    }
+    };
     
-    // TODO: Load profile data from backend
-    // This would be replaced with actual API call to get the user's profile data
+    fetchData();
   }, []);
 
   const handleLogout = () => {
@@ -87,7 +137,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
                 file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || 
                 file.type === "application/rtf")) {
       if (file.size <= 2 * 1024 * 1024) {
-        setProfileData({...profileData, resume: file});
+        setResumeFile(file);
         setIsFormDirty(true);
       } else {
         alert("File size should be less than 2MB");
@@ -112,14 +162,46 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
     setIsFormDirty(true);
   };
 
-  const handleSaveProfile = () => {
-    console.log("Saving profile data:", profileData);
-    // TODO: Add API call to save all profile data
-    // This would be an API call to send the form data to the backend
-    
-    alert("Profile updated successfully!");
-    setShowProfileForm(false);
-    setIsFormDirty(false);
+  const handleSaveProfile = async () => {
+    try {
+      setSaveLoading(true);
+      console.log("Saving profile data:", profileData);
+      
+      if (resumeFile) {
+        // If there's a resume file, upload it with the profile data
+        const formData = new FormData();
+        formData.append('resume', resumeFile);
+        
+        // Add other profile data to the form
+        formData.append('skills', JSON.stringify(profileData.skills));
+        formData.append('education', JSON.stringify(profileData.education));
+        formData.append('itSkills', JSON.stringify(profileData.itSkills));
+        formData.append('projects', JSON.stringify(profileData.projects));
+        formData.append('profileSummary', profileData.profileSummary || '');
+        
+        const response = await profileService.uploadResume(formData);
+        console.log("Profile updated with resume:", response);
+      } else {
+        // Otherwise, just update the profile data
+        const response = await profileService.updateProfile({
+          skills: profileData.skills,
+          education: profileData.education,
+          itSkills: profileData.itSkills,
+          projects: profileData.projects,
+          profileSummary: profileData.profileSummary || ''
+        });
+        console.log("Profile updated:", response);
+      }
+      
+      alert("Profile updated successfully!");
+      setShowProfileForm(false);
+      setIsFormDirty(false);
+      setSaveLoading(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Failed to update profile: " + (error.message || "Unknown error"));
+      setSaveLoading(false);
+    }
   };
 
   const handleInputChange = (e, section, field, index = null) => {
@@ -179,6 +261,15 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
     });
     setIsFormDirty(true);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+        <p className="mt-4 text-gray-700">Loading profile data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-blue-50 flex flex-col items-center p-4 py-10">
@@ -246,7 +337,7 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
       <div className="bg-white p-6 rounded-2xl shadow-lg mt-6 w-3/4 relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Application Status</h2>
-          <Link to="/application-status">
+          <Link to="/applicant-status">
             <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
               View Applications
             </button>
@@ -281,7 +372,16 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
             <div className="border-b pb-4">
               <h3 className="text-lg font-semibold mb-2">Resume</h3>
               <p className="text-gray-600">
-                {profileData.resume ? `Uploaded: ${profileData.resume.name}` : "No resume uploaded yet"}
+                {profileData.resume ? (
+                  <a 
+                    href={profileService.getResumeUrl(userData._id || userData.id)} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {profileData.resume.originalName || "View Resume"}
+                  </a>
+                ) : "No resume uploaded yet"}
               </p>
             </div>
             
@@ -380,8 +480,13 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
                   className="w-full p-2 border border-gray-300 rounded-md"
                 />
                 <p className="text-sm text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, RTF (Max 2MB)</p>
-                {profileData.resume && (
-                  <p className="mt-2 text-green-600">Selected: {profileData.resume.name}</p>
+                {profileData.resume && !resumeFile && (
+                  <p className="mt-2 text-green-600">
+                    Current: {profileData.resume.originalName || "Resume already uploaded"}
+                  </p>
+                )}
+                {resumeFile && (
+                  <p className="mt-2 text-green-600">Selected: {resumeFile.name}</p>
                 )}
               </div>
             </div>
@@ -632,12 +737,21 @@ const ApplicantProfile = ({ setIsApplicantLoggedIn }) => {
             <div className="flex justify-end">
               <button 
                 onClick={handleSaveProfile}
-                disabled={!isFormDirty}
+                disabled={!isFormDirty || saveLoading}
                 className={`px-6 py-3 rounded-md font-semibold flex items-center ${
-                  isFormDirty ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  isFormDirty && !saveLoading ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                <FaSave className="mr-2" /> Save All Changes
+                {saveLoading ? (
+                  <>
+                    <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FaSave className="mr-2" /> Save All Changes
+                  </>
+                )}
               </button>
             </div>
           </div>

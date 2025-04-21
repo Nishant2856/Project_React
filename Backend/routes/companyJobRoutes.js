@@ -84,7 +84,15 @@ router.get('/my-jobs', protectCompanyRoute, async (req, res) => {
 // Get single job by ID
 router.get('/:id', protectCompanyRoute, async (req, res) => {
   try {
-    const job = await CompanyJob.findById(req.params.id);
+    const job = await CompanyJob.findById(req.params.id)
+      .populate({
+        path: 'applications',
+        select: 'applicant status experience skills resume coverLetter createdAt',
+        populate: {
+          path: 'applicant',
+          select: 'name email mobile logo'
+        }
+      });
     
     if (!job) {
       return res.status(404).json({
@@ -271,6 +279,14 @@ router.get('/details/:id', async (req, res) => {
   try {
     const job = await CompanyJob.findById(req.params.id)
       .populate('company', 'name logo website rating')
+      .populate({
+        path: 'applications',
+        select: 'applicant status createdAt',
+        populate: {
+          path: 'applicant',
+          select: 'name email mobile logo'
+        }
+      })
       .lean();
     
     if (!job) {

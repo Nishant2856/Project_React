@@ -53,6 +53,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const applicantRoutes = require('./routes/applicantRoutes');
 const companyJobRoutes = require('./routes/companyJobRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
 // Register routes
 console.log('Registering routes...');
@@ -61,6 +62,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/applicants', applicantRoutes);
 app.use('/api/company-jobs', companyJobRoutes);
+app.use('/api/profiles', profileRoutes);
 console.log('Routes registered');
 
 // Debug route to list all routes

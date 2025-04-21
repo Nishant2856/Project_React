@@ -54,7 +54,15 @@ const CompanyLogin = ({ setIsCompanyLoggedIn }) => {
           user: response.data.company.user
         };
         
+        // Store user data with role information
+        const userData = {
+          _id: response.data.company.user,
+          name: response.data.company.name,
+          role: 'company'
+        };
+        
         localStorage.setItem("company", JSON.stringify(companyData));
+        localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("companyAuth", "true");
         
         // Update the auth state

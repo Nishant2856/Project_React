@@ -3,12 +3,17 @@ import { FaEnvelope, FaPhone, FaFileAlt, FaDownload } from "react-icons/fa";
 import axios from "axios";
 
 const EmployeeList = () => {
+  console.log("EmployeeList component rendering");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Add console log for initial state
+  console.log("Initial state:", { loading, applications: applications.length, error });
+  
   useEffect(() => {
+    console.log("Calling fetchApplications on mount");
     fetchApplications();
   }, []);
 
@@ -17,6 +22,28 @@ const EmployeeList = () => {
     try {
       // Get the token from localStorage
       const token = localStorage.getItem('token');
+      const userString = localStorage.getItem('user');
+      
+      console.log('User data from localStorage:', userString);
+      
+      // Try to parse user data
+      let user = {};
+      try {
+        if (userString) {
+          user = JSON.parse(userString);
+          console.log('Parsed user data:', user);
+        }
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+      
+      // Check if user is in a different format or location
+      const companyAuth = localStorage.getItem('companyAuth');
+      const applicantAuth = localStorage.getItem('applicantAuth');
+      console.log('Auth flags:', { companyAuth, applicantAuth });
+      
+      const isCompanyUser = user.role === 'company' || companyAuth === 'true';
+      console.log('Is company user:', isCompanyUser);
       
       if (!token) {
         setError('Authentication required. Please login.');
@@ -24,66 +51,105 @@ const EmployeeList = () => {
         return;
       }
       
-      // Fetch all jobs for the company
-      const jobsResponse = await axios.get('http://localhost:5000/api/jobs', {
+      if (!isCompanyUser) {
+        // Instead of showing error, try to proceed with the request
+        console.log('Warning: User role is not company, but proceeding with request');
+      }
+      
+      // Use the new endpoint to fetch all applications for the company in one request
+      console.log('Fetching company applications...');
+      const applicationsResponse = await axios.get('http://localhost:5000/api/applicants/company-applications', {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      if (!jobsResponse.data.success) {
-        throw new Error('Failed to fetch jobs');
+      if (!applicationsResponse.data.success) {
+        throw new Error(applicationsResponse.data.message || 'Failed to fetch applications');
       }
       
-      // For each job, fetch applications
-      const jobIds = jobsResponse.data.jobs.map(job => job._id);
-      
-      // Array to store all applications
-      let allApplications = [];
-      
-      // Fetch applications for each job
-      for (const jobId of jobIds) {
-        const applicationsResponse = await axios.get(`http://localhost:5000/api/applicants/job/${jobId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        if (applicationsResponse.data.success) {
-          allApplications = [...allApplications, ...applicationsResponse.data.applications];
-        }
-      }
-      
-      setApplications(allApplications);
+      console.log(`Fetched ${applicationsResponse.data.count} applications for the company`);
+      console.log('Applications data:', applicationsResponse.data.applications);
+      setApplications(applicationsResponse.data.applications);
+      console.log('State updated with applications');
     } catch (err) {
       console.error('Error fetching applications:', err);
-      setError('Failed to load applicant data. Please try again.');
+      let errorMessage = 'Failed to load applicant data. Please try again.';
+      
+      if (err.response) {
+        errorMessage = err.response.data.message || errorMessage;
+        console.error('Response error:', err.response.data);
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
+      console.log('Loading state set to false');
     }
   };
 
+  // Add effect to log state changes
+  useEffect(() => {
+    console.log('Applications state updated:', applications.length, 'applications');
+  }, [applications]);
+
+  useEffect(() => {
+    console.log('Loading state updated:', loading);
+  }, [loading]);
+
+  useEffect(() => {
+    console.log('Error state updated:', error);
+  }, [error]);
+
   const handleStatusUpdate = async (applicationId, newStatus) => {
     try {
+      console.log(`Updating application ${applicationId} status to ${newStatus}`);
       const token = localStorage.getItem('token');
       
-      await axios.put(`http://localhost:5000/api/applicants/${applicationId}`, 
+      if (!token) {
+        alert('Authentication required. Please login again.');
+        return;
+      }
+      
+      // Add loading state for this specific application
+      setApplications(applications.map(app => 
+        app._id === applicationId ? {...app, isUpdating: true} : app
+      ));
+      
+      const response = await axios.put(
+        `http://localhost:5000/api/applicants/${applicationId}/status`, 
         { status: newStatus },
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
       
+      console.log('Status update response:', response.data);
+      
       // Update the status in local state
       setApplications(applications.map(app => 
-        app._id === applicationId ? {...app, status: newStatus} : app
+        app._id === applicationId ? {...app, status: newStatus, isUpdating: false} : app
       ));
       
     } catch (err) {
       console.error('Error updating application status:', err);
-      alert('Failed to update application status');
+      
+      // Show the full error response for debugging
+      if (err.response) {
+        console.error('Error response data:', err.response.data);
+        console.error('Error response status:', err.response.status);
+        alert(`Failed to update status: ${err.response.data.message || 'Unknown error'}`);
+      } else {
+        alert('Failed to update application status. Network error.');
+      }
+      
+      // Reset the updating state
+      setApplications(applications.map(app => 
+        app._id === applicationId ? {...app, isUpdating: false} : app
+      ));
     }
   };
 
@@ -116,80 +182,143 @@ const EmployeeList = () => {
     <div className="bg-blue-50 min-h-screen p-6 flex justify-center">
       <div className="w-7/8 lg:w-3/4">
         <h2 className="text-2xl font-bold mb-6 text-center">Applicants List</h2>
+        
+        {console.log('Rendering component with:', { loading, error, applications: applications.length })}
 
-        {applications.length === 0 ? (
+        {loading ? (
+          <div className="bg-white shadow-md rounded-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-700 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading applications...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-white shadow-md rounded-lg p-8 text-center">
+            <h3 className="text-lg font-semibold mb-2 text-red-600">Error</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button 
+              onClick={fetchApplications}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
+        ) : applications.length === 0 ? (
           <div className="bg-white shadow-md rounded-lg p-8 text-center">
             <h3 className="text-lg font-semibold mb-2">No Applicants Yet</h3>
             <p className="text-gray-600">There are no applications for your job postings.</p>
           </div>
         ) : (
-          applications.map((application) => (
-            <div
-              key={application._id}
-              className="bg-white shadow-md rounded-lg p-5 flex justify-between items-center mb-6"
-            >
-              {/* Profile Section */}
-              <div className="flex items-center space-x-20">
-                <img
-                  src={application.applicant.logo ? `http://localhost:5000/${application.applicant.logo}` : "/profile.jpg"}
-                  alt="User Avatar"
-                  className="h-14 w-14 rounded-full border-2 border-blue-400"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/profile.jpg";
-                  }}
-                />
-                <div>
-                  <h3 className="text-lg font-bold">{application.applicant.name}</h3>
-                  <div className="text-gray-600 flex items-center space-x-2">
-                    <FaEnvelope className="text-gray-500" />
-                    <span>{application.applicant.email}</span>
-                  </div>
-                  <div className="text-gray-600 flex items-center space-x-2">
-                    <FaPhone className="text-gray-500" />
-                    <span>{application.applicant.mobile || "Not provided"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-20">
-                {/* Resume Button */}
-                <button
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-orange-600"
-                  onClick={() => setSelectedEmployee(application)}
+          <div>
+            <p className="mb-4 text-gray-700">{applications.length} application(s) found</p>
+            {applications.map((application) => {
+              console.log('Rendering application:', application);
+              return (
+                <div
+                  key={application._id}
+                  className="bg-white shadow-md rounded-lg p-5 flex justify-between items-center mb-6"
                 >
-                  Resume/Document
-                </button>
+                  {/* Profile Section */}
+                  <div className="flex items-center space-x-20">
+                    <img
+                      src={application.applicant && application.applicant.logo 
+                        ? `http://localhost:5000/${application.applicant.logo}` 
+                        : "/profile.jpg"}
+                      alt="User Avatar"
+                      className="h-14 w-14 rounded-full border-2 border-blue-400"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/profile.jpg";
+                      }}
+                    />
+                    <div>
+                      <h3 className="text-lg font-bold">
+                        {application.applicant ? application.applicant.name : "Unknown User"}
+                      </h3>
+                      {application.applicant && (
+                        <>
+                          <div className="text-gray-600 flex items-center space-x-2">
+                            <FaEnvelope className="text-gray-500" />
+                            <span>{application.applicant.email}</span>
+                          </div>
+                          <div className="text-gray-600 flex items-center space-x-2">
+                            <FaPhone className="text-gray-500" />
+                            <span>{application.applicant.mobile || "Not provided"}</span>
+                          </div>
+                        </>
+                      )}
+                      {application.job && (
+                        <div className="mt-2 text-sm">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            Applied for: {application.job.title || "Job"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Accept & Reject in the Same Column */}
-                <div className="flex flex-col space-y-3">
-                  <button 
-                    className={`${
-                      application.status === 'accepted' 
-                        ? 'bg-green-600' 
-                        : 'bg-blue-500 hover:bg-blue-600'
-                    } text-white px-8 py-2 rounded-md font-semibold`}
-                    onClick={() => handleStatusUpdate(application._id, 'accepted')}
-                    disabled={application.status === 'accepted'}
-                  >
-                    {application.status === 'accepted' ? 'Accepted' : 'Accept'}
-                  </button>
-                  <button 
-                    className={`${
-                      application.status === 'rejected' 
-                        ? 'bg-gray-500' 
-                        : 'bg-red-500 hover:bg-red-600'
-                    } text-white px-8 py-2 rounded-md font-semibold`}
-                    onClick={() => handleStatusUpdate(application._id, 'rejected')}
-                    disabled={application.status === 'rejected'}
-                  >
-                    {application.status === 'rejected' ? 'Rejected' : 'Reject'}
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex items-center space-x-20">
+                    {/* Resume Button */}
+                    <button
+                      className="bg-orange-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-orange-600"
+                      onClick={() => setSelectedEmployee(application)}
+                    >
+                      Resume/Document
+                    </button>
+
+                    {/* Accept & Reject in the Same Column */}
+                    <div className="flex flex-col space-y-3">
+                      <button 
+                        className={`${
+                          application.status === 'accepted' 
+                            ? 'bg-green-600' 
+                            : application.isUpdating 
+                              ? 'bg-blue-300 cursor-not-allowed'
+                              : 'bg-blue-500 hover:bg-blue-600'
+                        } text-white px-8 py-2 rounded-md font-semibold flex items-center justify-center`}
+                        onClick={() => handleStatusUpdate(application._id, 'accepted')}
+                        disabled={application.status === 'accepted' || application.isUpdating}
+                      >
+                        {application.isUpdating ? (
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </span>
+                        ) : (
+                          application.status === 'accepted' ? 'Accepted' : 'Accept'
+                        )}
+                      </button>
+                      <button 
+                        className={`${
+                          application.status === 'rejected' 
+                            ? 'bg-gray-500' 
+                            : application.isUpdating
+                              ? 'bg-red-300 cursor-not-allowed'
+                              : 'bg-red-500 hover:bg-red-600'
+                        } text-white px-8 py-2 rounded-md font-semibold flex items-center justify-center`}
+                        onClick={() => handleStatusUpdate(application._id, 'rejected')}
+                        disabled={application.status === 'rejected' || application.isUpdating}
+                      >
+                        {application.isUpdating ? (
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </span>
+                        ) : (
+                          application.status === 'rejected' ? 'Rejected' : 'Reject'
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))
+              );
+            })}
+          </div>
         )}
 
         {/* Show Profile Detail Modal */}
@@ -212,6 +341,13 @@ const ProfileDetailsModal = ({ application, onClose }) => {
   useEffect(() => {
     const fetchApplicantProfile = async () => {
       try {
+        // Verify the application has a valid applicant property
+        if (!application || !application.applicant || !application.applicant._id) {
+          console.error('Invalid application data:', application);
+          setLoading(false);
+          return;
+        }
+
         const token = localStorage.getItem('token');
         const response = await axios.get(`http://localhost:5000/api/applicant-profile/${application.applicant._id}`, {
           headers: {
@@ -221,6 +357,7 @@ const ProfileDetailsModal = ({ application, onClose }) => {
         
         if (response.data.success) {
           setApplicantProfile(response.data.profile);
+          console.log('Applicant profile loaded:', response.data.profile);
         }
       } catch (err) {
         console.error('Error fetching applicant profile:', err);
@@ -230,7 +367,25 @@ const ProfileDetailsModal = ({ application, onClose }) => {
     };
 
     fetchApplicantProfile();
-  }, [application.applicant._id]);
+  }, [application?.applicant?._id]);
+
+  // If the application data is invalid, show an error
+  if (!application || !application.applicant) {
+    return (
+      <div className="fixed inset-0 bg-blue-50 bg-opacity-70 flex justify-center items-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="mb-4">Cannot display applicant details: Invalid data</p>
+          <button
+            onClick={onClose}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-blue-50 bg-opacity-70 flex justify-center items-center overflow-y-auto">
@@ -269,9 +424,11 @@ const ProfileDetailsModal = ({ application, onClose }) => {
               <FaPhone className="text-gray-500" />
               <span>{application.applicant.mobile || "Not provided"}</span>
             </div>
-            <div className="mt-2 text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full inline-block">
-              Applied for: {application.job.title}
-            </div>
+            {application.job && (
+              <div className="mt-2 text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full inline-block">
+                Applied for: {application.job.title || "Job"}
+              </div>
+            )}
           </div>
         </div>
 
