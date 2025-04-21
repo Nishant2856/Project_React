@@ -79,9 +79,6 @@ const AAllJobs2 = () => {
         return;
       }
 
-      // Skip application check for now - we can implement this later
-      // when we get the endpoint working properly
-      /*
       // Check if the applicant has already applied for this job
       const userStr = localStorage.getItem('user');
       const tokenStr = localStorage.getItem('token');
@@ -97,32 +94,36 @@ const AAllJobs2 = () => {
           if (userId) {
             console.log("Checking application status for user:", userId, "and job:", jobId);
             
-            // Use the new check endpoint
-            const applicationResponse = await axios.get(
-              `http://localhost:5000/api/applicants/check/${jobId}`,
-              { 
-                headers: {
-                  Authorization: `Bearer ${tokenStr}`
+            // Use the check endpoint to see if user already applied
+            try {
+              const applicationResponse = await axios.get(
+                `http://localhost:5000/api/applicants/check/${jobId}`,
+                { 
+                  headers: {
+                    Authorization: `Bearer ${tokenStr}`
+                  }
                 }
+              );
+              
+              console.log("Application check response:", applicationResponse.data);
+              
+              if (applicationResponse.data.hasApplied) {
+                setApplicationStatus("applied");
               }
-            );
-            
-            console.log("Application check response:", applicationResponse.data);
-            
-            if (applicationResponse.data.hasApplied) {
-              setApplicationStatus("applied");
+            } catch (checkErr) {
+              console.error("Error checking application status:", checkErr);
+              // Don't set error state here, as we want to show the job anyway
             }
           } else {
             console.error("Invalid user data, missing ID:", user);
           }
         } catch (err) {
-          console.error("Error checking application status:", err);
+          console.error("Error parsing user data:", err);
           // Don't set error state here, as we want to show the job anyway
         }
       } else {
         console.log("User not authenticated as applicant");
       }
-      */
     } catch (err) {
       console.error("Error fetching job data:", err);
       setError("Failed to load job data. Please try again later.");
@@ -207,8 +208,8 @@ const AAllJobs2 = () => {
         // Show success message
         alert("Application submitted successfully!");
         
-        // Navigate to application status page
-        navigate('/application-status');
+        // Stay on the same page instead of navigating away
+        // The button will now show "Applied ✓" due to the applicationStatus state change
       } else {
         alert(`Something went wrong: ${response.data.message || 'Please try again.'}`);
       }
