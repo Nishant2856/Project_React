@@ -203,7 +203,7 @@ const CompanyProfile = ({ setIsCompanyLoggedIn }) => {
         
         <FaPen 
           className="absolute top-4 right-4 text-gray-500 cursor-pointer text-xl hover:text-blue-500" 
-          onClick={() => navigate("/company-profile-update")}
+          onClick={() => navigate("/company/profile-update")}
         />
       </div>
     </div>

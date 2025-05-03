@@ -382,4 +382,105 @@ router.get('/me/profile', protectCompany, async (req, res) => {
   }
 });
 
+// Get company's own profile
+router.get('/me/profile', async (req, res) => {
+  try {
+    const company = await Company.findOne({ user: req.user._id })
+      .populate('user', 'email mobile');
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company profile not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      company
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Update company's own profile
+router.put('/me/profile', protectCompany, upload.single('logo'), async (req, res) => {
+  try {
+    const company = await Company.findOne({ user: req.user._id });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company profile not found'
+      });
+    }
+
+    // Update company fields
+    const updateFields = {
+      name: req.body.name,
+      description: req.body.about,
+      industry: req.body.industry,
+      location: req.body.location,
+      website: req.body.website,
+      size: req.body.size
+    };
+
+    // If new logo is uploaded, update logo path
+    if (req.file) {
+      // Delete old logo if it exists and is not the default
+      if (company.logo && company.logo !== 'uploads/logos/default-company-logo.png') {
+        try {
+          fs.unlinkSync(company.logo);
+        } catch (error) {
+          console.error('Error deleting old logo:', error);
+        }
+      }
+      updateFields.logo = req.file.path;
+    }
+
+    // Update company profile
+    const updatedCompany = await Company.findByIdAndUpdate(
+      company._id,
+      updateFields,
+      { new: true, runValidators: true }
+    ).populate('user', 'email mobile');
+
+    // Update user fields if provided
+    if (req.body.email || req.body.mobile) {
+      const userUpdateFields = {};
+      if (req.body.email) userUpdateFields.email = req.body.email;
+      if (req.body.mobile) userUpdateFields.mobile = req.body.mobile;
+
+      await User.findByIdAndUpdate(
+        req.user._id,
+        userUpdateFields,
+        { new: true, runValidators: true }
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      company: updatedCompany
+    });
+  } catch (error) {
+    // Delete uploaded file if exists and there was an error
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (error) {
+        console.error('Error deleting uploaded file:', error);
+      }
+    }
+
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 module.exports = router; 

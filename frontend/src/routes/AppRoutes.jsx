@@ -15,6 +15,7 @@ import AddJob from "../companies/AddJob";
 import ManageJobs from "../companies/ManageJobs"; 
 import EmployeeList from "../companies/EmployeeList"; 
 import CompanyProfile from "../companies/CompanyProfile"; 
+import CompanyProfileUpdate from "../companies/CompanyProfileUpdate";
 import CompanyUpdateJob from "../companies/CompanyUpdateJob"; 
 import AdminLogin from "../admin/AdminLogin";
 import AdminApplicant from "../admin/AdminApplicant";  
@@ -23,7 +24,7 @@ import AdminReport from "../admin/AdminReport";
 import AllCompanies from "../pages/AllCompanies"; 
 import AllJobs from "../pages/AllJobs";  
 import AllJobs2 from "../pages/AllJobs2";  
-import AJob from "../Applicant/AJob";  
+import AJob from "../Applicant/AJob";   
 import AAllCompanies from "../Applicant/AAllCompanies";
 import AAllJobs from "../Applicant/AAlljobs";
 import AAllJobs2 from "../Applicant/AAllJobs2";
@@ -120,6 +121,7 @@ const AppContent = () => {
         <Route path="/company/manage-jobs" element={isCompanyLoggedIn ? <ManageJobs /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/employee-list" element={isCompanyLoggedIn ? <EmployeeList /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/profile" element={isCompanyLoggedIn ? <CompanyProfile setIsCompanyLoggedIn={setIsCompanyLoggedIn} /> : <Navigate to="/company-login" replace />} />
+        <Route path="/company/profile-update" element={isCompanyLoggedIn ? <CompanyProfileUpdate /> : <Navigate to="/company-login" replace />} />
         <Route path="/company/update-job/:jobId" element={isCompanyLoggedIn ? <CompanyUpdateJob /> : <Navigate to="/company-login" replace />} />
       </Routes>
 
